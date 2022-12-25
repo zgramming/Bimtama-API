@@ -1,0 +1,48 @@
+{
+  "scripts": {
+    "dev": "npx nodemon app.ts",
+    "prisma:build": "npm run prisma:migrate && npm run prisma:generate && npm run prisma:format",
+    "prisma:build-seeder": "npm run prisma:migrate && npm run prisma:seeder && npm run prisma:generate && npm run prisma:format",
+    "prisma:migrate": "npx prisma migrate dev --name init",
+    "prisma:generate": "npx prisma generate",
+    "prisma:format": "npx prisma format",
+    "prisma:seeder": "ts-node prisma/seeds/seed.ts"
+  },
+  "devDependencies": {
+    "@koa/cors": "^4.0.0",
+    "@prisma/client": "^4.8.0",
+    "@types/koa-json": "^2.0.20",
+    "@types/koa-logger": "^3.1.2",
+    "@types/koa-router": "^7.4.4",
+    "@types/node": "^18.11.17",
+    "@types/validator": "^13.7.10",
+    "bcrypt": "^5.1.0",
+    "fastest-validator": "^1.16.0",
+    "nodemon": "^2.0.20",
+    "prisma": "^4.8.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.9.4"
+  },
+  "dependencies": {
+    "@types/bcrypt": "^5.0.0",
+    "@types/jsonwebtoken": "^8.5.9",
+    "@types/koa": "^2.13.5",
+    "@types/koa__cors": "^3.3.0",
+    "@types/koa-session": "^5.10.6",
+    "@types/koa-static": "^4.0.2",
+    "dotenv": "^16.0.3",
+    "jsonwebtoken": "^9.0.0",
+    "koa": "^2.13.4",
+    "koa-body": "^5.0.0",
+    "koa-combine-routers": "^4.0.2",
+    "koa-compose": "^4.1.0",
+    "koa-helmet": "^6.1.0",
+    "koa-json": "^2.0.2",
+    "koa-logger": "^3.2.1",
+    "koa-router": "^12.0.0",
+    "koa-session": "^6.2.0",
+    "koa-static": "^5.0.0",
+    "koa-validate": "^1.0.7",
+    "validator": "^13.7.0"
+  }
+}

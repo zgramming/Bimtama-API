@@ -1,0 +1,233 @@
+generator client {
+  provider = "prisma-client-js"
+  // output          = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum TypeCVPreview {
+  pdf
+  website
+}
+
+enum UserStatus {
+  active
+  inactive
+  blocked
+  process_verification
+}
+
+enum CommonStatus {
+  active
+  inactive
+}
+
+model AppGroupUser {
+  id     Int          @id @default(autoincrement())
+  code   String       @unique @db.VarChar(50)
+  name   String       @db.VarChar(100)
+  status CommonStatus @default(active)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  created_by Int?
+  updated_by Int?
+
+  user         Users[]
+  access_modul AppAccessModul[]
+  access_menu  AppAccessMenu[]
+
+  @@map("app_group_user")
+}
+
+model AppAccessMenu {
+  id                String @id @default(uuid())
+  app_group_user_id Int
+  app_modul_id      Int
+  app_menu_id       Int
+  allowed_access    Json?
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  created_by Int?
+  updated_by Int?
+
+  app_group_user AppGroupUser @relation(fields: [app_group_user_id], references: [id], onDelete: Cascade)
+  app_modul      AppModul     @relation(fields: [app_modul_id], references: [id], onDelete: Cascade)
+  app_menu       AppMenu      @relation(fields: [app_menu_id], references: [id], onDelete: Cascade)
+
+  @@map("app_access_menu")
+}
+
+model AppMenu {
+  id                 Int          @id @default(autoincrement())
+  app_modul_id       Int
+  app_menu_id_parent Int?
+  code               String       @db.VarChar(50)
+  name               String       @db.VarChar(100)
+  route              String       @db.VarChar(100)
+  order              Int          @default(0)
+  icon               String?
+  status             CommonStatus @default(active)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  created_by Int?
+  updated_by Int?
+
+  app_modul      AppModul        @relation(fields: [app_modul_id], references: [id], onDelete: Cascade)
+  menu_parent    AppMenu?        @relation(name: "parent_children", fields: [app_menu_id_parent], references: [id], onDelete: Cascade)
+  menu_childrens AppMenu[]       @relation(name: "parent_children")
+  access_menu    AppAccessMenu[]
+
+  @@map("app_menu")
+}
+
+model AppAccessModul {
+  id                String @id @default(uuid())
+  app_group_user_id Int
+  app_modul_id      Int
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  created_by Int?
+  updated_by Int?
+
+  app_group_user AppGroupUser @relation(fields: [app_group_user_id], references: [id], onDelete: Cascade)
+  app_modul      AppModul     @relation(fields: [app_modul_id], references: [id], onDelete: Cascade)
+
+  @@map("app_access_modul")
+}
+
+model AppModul {
+  id      Int          @id @default(autoincrement())
+  code    String       @unique @db.VarChar(50)
+  name    String       @db.VarChar(100)
+  order   Int          @default(0) @db.Int
+  pattern String       @unique @db.VarChar(255)
+  icon    String?      @db.VarChar(100)
+  status  CommonStatus @default(active)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  created_by Int?
+  updated_by Int?
+
+  menus        AppMenu[]
+  access_modul AppAccessModul[]
+  access_menu  AppAccessMenu[]
+
+  @@map("app_modul")
+}
+
+model Documentation {
+  id          Int          @id @default(autoincrement())
+  name        String       @db.VarChar(100)
+  code        String       @unique @db.VarChar(50)
+  job_id      Int
+  birth_date  DateTime
+  money       Decimal      @db.Decimal(19, 4)
+  hobbies     Json
+  description String?      @db.Text()
+  status      CommonStatus @default(active)
+  image       String?      @db.Text
+  file        String?      @db.Text
+  created_at  DateTime     @default(now())
+  updated_at  DateTime     @updatedAt
+  created_by  Int?
+  updated_by  Int?
+
+  job MasterData @relation(fields: [job_id], references: [id], onDelete: Cascade)
+
+  @@map("documentation")
+}
+
+model MasterCategory {
+  id                 Int          @id @default(autoincrement())
+  master_category_id Int?
+  code               String       @unique @db.VarChar(50)
+  name               String       @db.VarChar(100)
+  description        String?      @db.Text
+  status             CommonStatus @default(active)
+
+  /// Template
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  created_by Int?
+  updated_by Int?
+
+  /// Relationship
+  master_category_parent   MasterCategory?  @relation(name: "category", fields: [master_category_id], references: [id], onDelete: Cascade)
+  master_category_children MasterCategory[] @relation(name: "category")
+  master_datas             MasterData[]
+
+  @@map("master_category")
+}
+
+model MasterData {
+  id                   Int          @id @default(autoincrement())
+  master_data_id       Int?
+  master_category_id   Int
+  master_category_code String       @db.VarChar(50)
+  code                 String       @unique @db.VarChar(50)
+  name                 String       @db.VarChar(100)
+  order                Int          @default(0)
+  description          String?      @db.Text
+  status               CommonStatus @default(active)
+  parameter1_key       String?      @db.VarChar(50)
+  parameter1_value     String?      @db.VarChar(50)
+  parameter2_key       String?      @db.VarChar(50)
+  parameter2_value     String?      @db.VarChar(50)
+  parameter3_key       String?      @db.VarChar(50)
+  parameter3_value     String?      @db.VarChar(50)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  created_by Int?
+  updated_by Int?
+
+  master_category      MasterCategory  @relation(fields: [master_category_id], references: [id], onDelete: Cascade)
+  master_data_parent   MasterData?     @relation(name: "master_data", fields: [master_data_id], references: [id], onDelete: Cascade)
+  master_data_children MasterData[]    @relation(name: "master_data")
+  jobs_documentation   Documentation[]
+
+  @@map("master_data")
+}
+
+model Parameter {
+  id     Int          @id @default(autoincrement())
+  name   String       @db.VarChar(100)
+  code   String       @unique @db.VarChar(50)
+  value  String       @db.Text
+  status CommonStatus @default(active)
+
+  /// Template
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  created_by Int?
+  updated_by Int?
+
+  @@map("parameter")
+}
+
+model Users {
+  id                Int        @id @default(autoincrement())
+  app_group_user_id Int
+  name              String?    @db.VarChar(100)
+  email             String     @unique @db.VarChar(100)
+  username          String     @unique @db.VarChar(50)
+  password          String     @db.Text
+  status            UserStatus @default(inactive)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  created_by Int?
+  updated_by Int?
+
+  app_group_user AppGroupUser @relation(fields: [app_group_user_id], references: [id], onDelete: Cascade)
+
+  @@map("users")
+}
