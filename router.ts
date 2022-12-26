@@ -1,4 +1,6 @@
 import Router from "koa-router";
+import { AdminOutlineController } from "./routes/admin/outline";
+import { AdminOutlineComponentController } from "./routes/admin/outline_component";
 
 import { SettingAccessMenuController } from "./routes/setting/access_menu";
 import { SettingAccessModulController } from "./routes/setting/access_modul";
@@ -74,6 +76,10 @@ router.del(
 );
 
 router.get(`/setting/master_data`, SettingMasterDataController.get);
+router.get(
+  `/setting/master_data/by-category-code/:category_code`,
+  SettingMasterDataController.getByCategoryCodeCategory
+);
 router.post(`/setting/master_data`, SettingMasterDataController.create);
 router.put(`/setting/master_data/:id`, SettingMasterDataController.update);
 router.del(`/setting/master_data/:id`, SettingMasterDataController.delete);
@@ -87,5 +93,23 @@ router.get(`/setting/documentation`, SettingDocumentationController.get);
 router.post(`/setting/documentation`, SettingDocumentationController.create);
 router.put(`/setting/documentation/:id`, SettingDocumentationController.update);
 router.del(`/setting/documentation/:id`, SettingDocumentationController.delete);
+
+//! Admin
+
+router.get(`/admin/outline`, AdminOutlineController.get);
+router.get(`/admin/outline/:id`, AdminOutlineController.getById);
+router.post(`/admin/outline`, AdminOutlineController.create);
+router.put(`/admin/outline/:id`, AdminOutlineController.update);
+router.delete(`/admin/outline/:id`, AdminOutlineController.delete);
+
+router.get(`/admin/outline-component`, AdminOutlineComponentController.get);
+router.get(
+  `/admin/outline-component/:id`,
+  AdminOutlineComponentController.getById
+);
+router.get(
+  `/admin/outline-component/by-outline-id/:outline_id`,
+  AdminOutlineComponentController.getByOutlineId
+);
 
 export default router;

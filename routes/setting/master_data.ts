@@ -44,6 +44,30 @@ export class SettingMasterDataController {
     return (ctx.body = { success: true, data: result });
   }
 
+  public static async getByCategoryCodeCategory(
+    ctx: ParameterizedContext,
+    next: Next
+  ) {
+    try {
+      const { category_code } = ctx.params;
+      const result = await prisma.masterData.findMany({
+        where: { master_category_code: category_code },
+      });
+
+      return (ctx.body = {
+        success: true,
+        data: result,
+      });
+    } catch (e: any) {
+      ctx.status = 500;
+      const message = e?.message ?? "Unknown Error Message";
+      return (ctx.body = {
+        success: false,
+        message: message,
+      });
+    }
+  }
+
   public static async create(ctx: ParameterizedContext, next: Next) {
     try {
       const {

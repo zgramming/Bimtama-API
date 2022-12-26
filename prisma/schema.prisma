@@ -194,6 +194,9 @@ model MasterData {
   master_data_children MasterData[]    @relation(name: "master_data")
   jobs_documentation   Documentation[]
 
+  outline           Outline[]
+  outline_component OutlineComponent[]
+
   @@map("master_data")
 }
 
@@ -230,4 +233,38 @@ model Users {
   app_group_user AppGroupUser @relation(fields: [app_group_user_id], references: [id], onDelete: Cascade)
 
   @@map("users")
+}
+
+//! Admin
+model Outline {
+  id             Int      @id @default(autoincrement())
+  mst_outline_id Int
+  title          String   @db.VarChar(100)
+  description    String?  @db.Text
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+  created_by     Int?
+  updated_by     Int?
+
+  master_outline    MasterData         @relation(fields: [mst_outline_id], references: [id], onDelete: Cascade)
+  outline_component OutlineComponent[]
+
+  @@map("outline")
+}
+
+model OutlineComponent {
+  id                       String   @id @default(uuid())
+  outline_id               Int
+  mst_outline_component_id Int
+  title                    String   @db.VarChar(100)
+  description              String?  @db.Text()
+  created_at               DateTime @default(now())
+  updated_at               DateTime @updatedAt
+  created_by               Int?
+  updated_by               Int?
+
+  outline                  Outline    @relation(fields: [outline_id], references: [id], onDelete: Cascade)
+  master_outline_component MasterData @relation(fields: [mst_outline_component_id], references: [id], onDelete: Cascade)
+
+  @@map("outline_component")
 }
