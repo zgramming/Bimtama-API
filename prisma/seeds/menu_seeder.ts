@@ -56,7 +56,7 @@ const MenuSeeder = async () => {
       app_modul_id: modulDosen?.id ?? 0,
       code: "DOSEN_GUIDANCE",
       name: "Bimbingan",
-      route: "/dosen/bimbingan",
+      route: "/dosen/guidance",
       order: 4,
     },
     {
@@ -103,6 +103,13 @@ const MenuSeeder = async () => {
       name: "Pembimbing",
       route: "/mahasiswa/mentor",
       order: 5,
+    },
+    {
+      app_modul_id: modulMahasiswa?.id ?? 0,
+      code: "MAHASISWA_SETTING",
+      name: "Setting",
+      route: "?/mahasiswa/setting",
+      order: 6,
     },
   ];
 
@@ -198,6 +205,7 @@ const MenuSeeder = async () => {
     },
   ];
 
+  //! Start Insert Children Menu
   await prisma.appMenu.createMany({
     data: [...settingMenu, ...dosenMenu, ...mahasiswaMenu, ...adminMenu],
   });
@@ -218,6 +226,10 @@ const MenuSeeder = async () => {
     where: { code: "MAHASISWA_MEETING_SCHEDULE" },
   });
 
+  const mahasiswaSettingParent = await prisma.appMenu.findFirst({
+    where: { code: "MAHASISWA_SETTING" },
+  });
+
   await prisma.appMenu.createMany({
     data: [
       {
@@ -226,7 +238,7 @@ const MenuSeeder = async () => {
         code: "SETTING_CHILDREN_1",
         name: "Children Menu 1",
         route: "/setting/parent/children_1",
-        order: 11,
+        order: 1,
       },
       {
         app_modul_id: modulSetting?.id ?? 0,
@@ -234,7 +246,7 @@ const MenuSeeder = async () => {
         code: "SETTING_CHILDREN_2",
         name: "Children Menu 2",
         route: "/setting/parent/children_2",
-        order: 12,
+        order: 2,
       },
 
       //! Dosen
@@ -261,7 +273,7 @@ const MenuSeeder = async () => {
         code: "DOSEN_SETTING_PROFILE",
         name: "Profile",
         route: "/dosen/setting/profile",
-        order: 6,
+        order: 1,
       },
       {
         app_menu_id_parent: dosenSettingParent?.id,
@@ -269,7 +281,7 @@ const MenuSeeder = async () => {
         code: "DOSEN_SETTING_GROUP",
         name: "Kelompok",
         route: "/dosen/setting/group",
-        order: 7,
+        order: 2,
       },
 
       //! Mahasiswa
@@ -287,6 +299,23 @@ const MenuSeeder = async () => {
         code: "MAHASISWA_MEETING_SCHEDULE_PERSONAL",
         name: "Personal",
         route: "/mahasiswa/meeting_schedule/personal",
+        order: 2,
+      },
+
+      {
+        app_menu_id_parent: mahasiswaSettingParent?.id,
+        app_modul_id: modulMahasiswa?.id ?? 0,
+        code: "MAHASISWA_SETTING_OUTLINE",
+        name: "Outline",
+        route: "/mahasiswa/setting/outline",
+        order: 1,
+      },
+      {
+        app_menu_id_parent: mahasiswaSettingParent?.id,
+        app_modul_id: modulMahasiswa?.id ?? 0,
+        code: "MAHASISWA_SETTING_PROFILE",
+        name: "Profile",
+        route: "/mahasiswa/setting/profile",
         order: 2,
       },
     ],

@@ -230,7 +230,8 @@ model Users {
   created_by Int?
   updated_by Int?
 
-  app_group_user AppGroupUser @relation(fields: [app_group_user_id], references: [id], onDelete: Cascade)
+  app_group_user     AppGroupUser       @relation(fields: [app_group_user_id], references: [id], onDelete: Cascade)
+  student_preference StudentPreference?
 
   @@map("users")
 }
@@ -246,8 +247,9 @@ model Outline {
   created_by     Int?
   updated_by     Int?
 
-  master_outline    MasterData         @relation(fields: [mst_outline_id], references: [id], onDelete: Cascade)
-  outline_component OutlineComponent[]
+  master_outline     MasterData         @relation(fields: [mst_outline_id], references: [id], onDelete: Cascade)
+  outline_component  OutlineComponent[]
+  student_preference StudentPreference?
 
   @@map("outline")
 }
@@ -267,4 +269,21 @@ model OutlineComponent {
   master_outline_component MasterData @relation(fields: [mst_outline_component_id], references: [id], onDelete: Cascade)
 
   @@map("outline_component")
+}
+
+model StudentPreference {
+  id      Int @id @default(autoincrement())
+  /// One to One
+  user_id Int @unique
+
+  outline_id Int      @unique
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  created_by Int?
+  updated_by Int?
+
+  user    Users   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  outline Outline @relation(fields: [outline_id], references: [id], onDelete: Cascade)
+
+  @@map("student_outline")
 }
