@@ -1,76 +1,125 @@
 import { PrismaClient } from "@prisma/client";
+import { generateUUID } from "../../utils/function";
 
 const prisma = new PrismaClient();
 
 const MenuSeeder = async () => {
   await prisma.appMenu.deleteMany();
+
   const modulSetting = await prisma.appModul.findFirst({
     where: {
       code: "SETTING",
     },
   });
-  const modulCV = await prisma.appModul.findFirst({
+
+  const modulAdmin = await prisma.appModul.findFirst({
     where: {
-      code: "CV",
+      code: "ADMIN",
     },
   });
 
-  const curriculumVitaeMenu = [
+  const modulMahasiswa = await prisma.appModul.findFirst({
+    where: {
+      code: "MAHASISWA",
+    },
+  });
+
+  const modulDosen = await prisma.appModul.findFirst({
+    where: {
+      code: "DOSEN",
+    },
+  });
+
+  const dosenMenu = [
     {
-      app_modul_id: modulCV?.id ?? 0,
-      code: "CV_PROFILE",
-      name: "Profile",
-      route: "/cv/profile",
+      app_modul_id: modulDosen?.id ?? 0,
+      code: "DOSEN_DASHBOARD",
+      name: "Dashboard",
+      route: "/dosen/dashboard",
       order: 1,
     },
     {
-      app_modul_id: modulCV?.id ?? 0,
-      code: "CV_EXPERIENCE",
-      name: "Experience",
-      route: "/cv/experience",
+      app_modul_id: modulDosen?.id ?? 0,
+      code: "DOSEN_GROUP",
+      name: "Kelompok",
+      route: "/dosen/group",
       order: 2,
     },
     {
-      app_modul_id: modulCV?.id ?? 0,
-      code: "CV_EDUCATION",
-      name: "Education",
-      route: "/cv/education",
+      app_modul_id: modulDosen?.id ?? 0,
+      code: "DOSEN_MEETING_SCHEDULE",
+      name: "Jadwal Pertemuan",
+      route: "?/dosen/meeting_schedule",
       order: 3,
     },
     {
-      app_modul_id: modulCV?.id ?? 0,
-      code: "CV_SKILL",
-      name: "Skill",
-      route: "/cv/skill",
+      app_modul_id: modulDosen?.id ?? 0,
+      code: "DOSEN_GUIDANCE",
+      name: "Bimbingan",
+      route: "/dosen/bimbingan",
       order: 4,
     },
     {
-      app_modul_id: modulCV?.id ?? 0,
-      code: "CV_LICENSE_CERTIFICATE",
-      name: "License & Certificate",
-      route: "/cv/license_certificate",
+      app_modul_id: modulDosen?.id ?? 0,
+      code: "DOSEN_SETTING",
+      name: "Setting",
+      route: "?/dosen/setting",
       order: 5,
     },
+  ];
+
+  const mahasiswaMenu = [
     {
-      app_modul_id: modulCV?.id ?? 0,
-      code: "CV_PORTFOLIO",
-      name: "Portfolio",
-      route: "/cv/portfolio",
-      order: 6,
+      app_modul_id: modulMahasiswa?.id ?? 0,
+      code: "MAHASISWA_DASHBOARD",
+      name: "Dashboard",
+      route: "/mahasiswa/dashboard",
+      order: 1,
     },
     {
-      app_modul_id: modulCV?.id ?? 0,
-      code: "CV_CONTACT",
-      name: "Kontak",
-      route: "/cv/contact",
-      order: 7,
+      app_modul_id: modulMahasiswa?.id ?? 0,
+      code: "MAHASISWA_GROUP",
+      name: "Kelompok",
+      route: "/mahasiswa/group",
+      order: 2,
     },
     {
-      app_modul_id: modulCV?.id ?? 0,
-      code: "CV_PREVIEW",
-      name: "Preview",
-      route: "/cv/preview",
-      order: 8,
+      app_modul_id: modulMahasiswa?.id ?? 0,
+      code: "MAHASISWA_MEETING_SCHEDULE",
+      name: "Jadwal Pertemuan",
+      route: "?/mahasiswa/meeting_schedule",
+      order: 3,
+    },
+    {
+      app_modul_id: modulMahasiswa?.id ?? 0,
+      code: "MAHASISWA_GUIDANCE",
+      name: "Bimbingan",
+      route: "/mahasiswa/guidance",
+      order: 4,
+    },
+    {
+      app_modul_id: modulMahasiswa?.id ?? 0,
+      code: "MAHASISWA_MENTOR",
+      name: "Pembimbing",
+      route: "/mahasiswa/mentor",
+      order: 5,
+    },
+  ];
+
+  const adminMenu = [
+    {
+      app_modul_id: modulAdmin?.id ?? 0,
+      code: "ADMIN_DASHBOARD",
+      name: "Dashboard",
+      route: "/admin/dashboard",
+      order: 1,
+    },
+    {
+      app_modul_id: modulAdmin?.id ?? 0,
+      code: "ADMIN_OUTLINE_COMPONENT",
+      name: "Outline Component",
+      route: "/admin/outline_component",
+      order: 2,
     },
   ];
 
@@ -150,11 +199,23 @@ const MenuSeeder = async () => {
   ];
 
   await prisma.appMenu.createMany({
-    data: [...settingMenu, ...curriculumVitaeMenu],
+    data: [...settingMenu, ...dosenMenu, ...mahasiswaMenu, ...adminMenu],
   });
 
   const parentMenu = await prisma.appMenu.findFirst({
     where: { code: "SETTING_PARENT_MENU" },
+  });
+
+  const dosenMeetingScheduleParent = await prisma.appMenu.findFirst({
+    where: { code: "DOSEN_MEETING_SCHEDULE" },
+  });
+
+  const dosenSettingParent = await prisma.appMenu.findFirst({
+    where: { code: "DOSEN_SETTING" },
+  });
+
+  const mahasiswaMeetingScheduleParent = await prisma.appMenu.findFirst({
+    where: { code: "MAHASISWA_MEETING_SCHEDULE" },
   });
 
   await prisma.appMenu.createMany({
@@ -174,6 +235,59 @@ const MenuSeeder = async () => {
         name: "Children Menu 2",
         route: "/setting/parent/children_2",
         order: 12,
+      },
+
+      //! Dosen
+      {
+        app_menu_id_parent: dosenMeetingScheduleParent?.id,
+        app_modul_id: modulDosen?.id ?? 0,
+        code: "DOSEN_MEETING_SCHEDULE_GROUP",
+        name: "Kelompok",
+        route: "/dosen/meeting_schedule/group",
+        order: 1,
+      },
+      {
+        app_menu_id_parent: dosenMeetingScheduleParent?.id,
+        app_modul_id: modulDosen?.id ?? 0,
+        code: "DOSEN_MEETING_SCHEDULE_PERSONAL",
+        name: "Personal",
+        route: "/dosen/meeting_schedule/personal",
+        order: 2,
+      },
+
+      {
+        app_menu_id_parent: dosenSettingParent?.id,
+        app_modul_id: modulDosen?.id ?? 0,
+        code: "DOSEN_SETTING_PROFILE",
+        name: "Profile",
+        route: "/dosen/setting/profile",
+        order: 6,
+      },
+      {
+        app_menu_id_parent: dosenSettingParent?.id,
+        app_modul_id: modulDosen?.id ?? 0,
+        code: "DOSEN_SETTING_GROUP",
+        name: "Kelompok",
+        route: "/dosen/setting/group",
+        order: 7,
+      },
+
+      //! Mahasiswa
+      {
+        app_menu_id_parent: mahasiswaMeetingScheduleParent?.id,
+        app_modul_id: modulMahasiswa?.id ?? 0,
+        code: "MAHASISWA_MEETING_SCHEDULE_GROUP",
+        name: "Kelompok",
+        route: "/mahasiswa/meeting_schedule/group",
+        order: 1,
+      },
+      {
+        app_menu_id_parent: mahasiswaMeetingScheduleParent?.id,
+        app_modul_id: modulMahasiswa?.id ?? 0,
+        code: "MAHASISWA_MEETING_SCHEDULE_PERSONAL",
+        name: "Personal",
+        route: "/mahasiswa/meeting_schedule/personal",
+        order: 2,
       },
     ],
   });

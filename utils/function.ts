@@ -1,4 +1,5 @@
 import { existsSync } from "fs";
+import { v4 as uuidv4 } from "uuid";
 
 export const mbTObytes = (mb: number) => {
   const multiplication = 1048576;
@@ -74,4 +75,8 @@ export const validationFile = ({
   }
 
   return true;
+};
+
+export const generateUUID = () => {
+  return uuidv4();
 };

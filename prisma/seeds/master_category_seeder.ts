@@ -6,9 +6,8 @@ const MasterCategorySeeder = async () => {
   await prisma.masterCategory.deleteMany();
 
   const data = [
-    { code: "LEVEL_SKILL", name: "Level Skill" },
-    { code: "KODE_TEMPLATE_WEB", name: "Kode Template Website" },
-    { code: "KODE_TEMPLATE_PDF", name: "Kode Template PDF" },
+    { code: "OUTLINE", name: "Outline" },
+    { code: "OUTLINE_COMPONENT", name: "Outline Component" },
   ];
 
   await prisma.masterCategory.createMany({ data: data });

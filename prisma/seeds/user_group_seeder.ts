@@ -12,8 +12,9 @@ const UserGroupSeeder = async () => {
   await prisma.appGroupUser.deleteMany();
   const data: UserGroupData[] = [
     { name: "Superadmin", code: "superadmin", status: "active" },
-    { name: "User", code: "user", status: "active" },
-    { name: "Human Resource Development", code: "hrd", status: "active" },
+    { name: "Admin", code: "admin", status: "active" },
+    { name: "Dosen", code: "dosen", status: "active" },
+    { name: "Mahasiswa", code: "mahasiswa", status: "active" },
   ];
   await prisma.appGroupUser.createMany({ data: data });
 };

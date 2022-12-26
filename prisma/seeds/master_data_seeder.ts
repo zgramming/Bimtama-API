@@ -4,129 +4,100 @@ const prisma = new PrismaClient();
 
 const MasterDataSeeder = async () => {
   await prisma.masterData.deleteMany();
-  const levelSkillCategory = await prisma.masterCategory.findFirst({
-    where: { code: "LEVEL_SKILL" },
-  });
-  const kodeTemplateWeb = await prisma.masterCategory.findFirst({
-    where: { code: "KODE_TEMPLATE_WEB" },
-  });
-  const kodeTemplatePDF = await prisma.masterCategory.findFirst({
-    where: { code: "KODE_TEMPLATE_PDF" },
+
+  const outline = await prisma.masterCategory.findFirst({
+    where: { code: "OUTLINE" },
   });
 
-  const dataLevel = [
-    {
-      master_category_id: levelSkillCategory!.id,
-      master_category_code: levelSkillCategory!.code,
-      code: "LEVEL_SKILL_BEGINNER",
-      name: "Beginner",
-      order: 1,
-      parameter1_key: "color",
-      parameter1_value: "#9AD0EC",
-    },
-    {
-      master_category_id: levelSkillCategory!.id,
-      master_category_code: levelSkillCategory!.code,
-      code: "LEVEL_SKILL_BASIC",
-      name: "Basic",
-      order: 2,
-      parameter1_key: "color",
-      parameter1_value: "#1572A1",
-    },
-    {
-      master_category_id: levelSkillCategory!.id,
-      master_category_code: levelSkillCategory!.code,
-      code: "LEVEL_SKILL_INTERMEDIATE",
-      name: "Intermediate",
-      order: 3,
-      parameter1_key: "color",
-      parameter1_value: "#F5B971",
-    },
-    {
-      master_category_id: levelSkillCategory!.id,
-      master_category_code: levelSkillCategory!.code,
-      code: "LEVEL_SKILL_ADVANCE",
-      name: "Advance",
-      order: 4,
-      parameter1_key: "color",
-      parameter1_value: "#D45079",
-    },
-  ];
+  const outlineComponent = await prisma.masterCategory.findFirst({
+    where: { code: "OUTLINE_COMPONENT" },
+  });
 
-  const dataKodeTemplateWebsite = [
-    // Kageki Shoujo
-    /// Reference : https://lmpixels.com/demo/vido/vido_vcard_template_yellow/index.html
+  const dataOutline = [
     {
-      master_category_id: kodeTemplateWeb!.id,
-      master_category_code: kodeTemplateWeb!.code,
-      code: "KODE_TEMPLATE_WEB_WATANASA",
-      name: "Watanasa",
-      description: "Watanabe Sarasa",
+      master_category_id: outline!.id,
+      master_category_code: outline!.code,
+      code: "D3_SISTEM_INFORMASI",
+      name: "D3 Sistem Informasi",
       order: 1,
     },
     {
-      master_category_id: kodeTemplateWeb!.id,
-      master_category_code: kodeTemplateWeb!.code,
-      code: "KODE_TEMPLATE_WEB_NARAAI",
-      name: "Naraai",
-      description: "Narata Ai",
+      master_category_id: outline!.id,
+      master_category_code: outline!.code,
+      code: "D3_SISTEM_INFORMASI_AKUNTANSI",
+      name: "D3 Sistem Informasi Akuntansi",
       order: 2,
     },
     {
-      master_category_id: kodeTemplateWeb!.id,
-      master_category_code: kodeTemplateWeb!.code,
-      code: "KODE_TEMPLATE_WEB_HOSHIRU",
-      name: "Hoshiru",
-      description: "Hoshino Kaoru",
+      master_category_id: outline!.id,
+      master_category_code: outline!.code,
+      code: "D3_TEKNOLOGI_KOMPUTER",
+      name: "D3 Teknologi Komputer",
       order: 3,
     },
     {
-      master_category_id: kodeTemplateWeb!.id,
-      master_category_code: kodeTemplateWeb!.code,
-      code: "KODE_TEMPLATE_WEB_YAMAKO",
-      name: "Yamako",
-      description: "Yamada Ayako",
+      master_category_id: outline!.id,
+      master_category_code: outline!.code,
+      code: "S1_ILMU_KOMPUTER",
+      name: "S1 Ilmu Komputer",
       order: 4,
     },
     {
-      master_category_id: kodeTemplateWeb!.id,
-      master_category_code: kodeTemplateWeb!.code,
-      code: "KODE_TEMPLATE_WEB_SUGISAWA",
-      name: "Sugisawa",
-      description: "Sugimoto Sawa",
+      master_category_id: outline!.id,
+      master_category_code: outline!.code,
+      code: "S1_SISTEM_INFORMASI",
+      name: "S1 Sistem Informasi",
       order: 5,
     },
   ];
 
-  const dataKodeTemplatePDF = [
+  const dataOutlineComponent = [
     {
-      master_category_id: kodeTemplatePDF!.id,
-      master_category_code: kodeTemplatePDF!.code,
-      code: "KODE_TEMPLATE_PDF_SENTAGI",
-      name: "Sentagi",
-      description: "Senjougahara, Hitagi",
+      master_category_id: outlineComponent!.id,
+      master_category_code: outlineComponent!.code,
+      code: "OUTLINE_COMPONENT_JUDUL_PROPOSAL",
+      name: "Judul Proposal",
       order: 1,
     },
     {
-      master_category_id: kodeTemplatePDF!.id,
-      master_category_code: kodeTemplatePDF!.code,
-      code: "KODE_TEMPLATE_PDF_OSHIBU",
-      name: "Oshibu",
-      description: "Oshino, Shinobu",
+      master_category_id: outlineComponent!.id,
+      master_category_code: outlineComponent!.code,
+      code: "OUTLINE_COMPONENT_BAB1",
+      name: "BAB I",
       order: 2,
     },
     {
-      master_category_id: kodeTemplatePDF!.id,
-      master_category_code: kodeTemplatePDF!.code,
-      code: "KODE_TEMPLATE_PDF_ARAMI",
-      name: "Arami",
-      description: "Araragi, Koyomi",
+      master_category_id: outlineComponent!.id,
+      master_category_code: outlineComponent!.code,
+      code: "OUTLINE_COMPONENT_BAB2",
+      name: "BAB II",
       order: 3,
+    },
+    {
+      master_category_id: outlineComponent!.id,
+      master_category_code: outlineComponent!.code,
+      code: "OUTLINE_COMPONENT_BAB3",
+      name: "BAB III",
+      order: 4,
+    },
+    {
+      master_category_id: outlineComponent!.id,
+      master_category_code: outlineComponent!.code,
+      code: "OUTLINE_COMPONENT_BAB4",
+      name: "BAB IV",
+      order: 5,
+    },
+    {
+      master_category_id: outlineComponent!.id,
+      master_category_code: outlineComponent!.code,
+      code: "OUTLINE_COMPONENT_BAB5",
+      name: "BAB V",
+      order: 6,
     },
   ];
 
   await prisma.masterData.createMany({
-    data: [...dataLevel, ...dataKodeTemplateWebsite, ...dataKodeTemplatePDF],
+    data: [...dataOutline, ...dataOutlineComponent],
   });
 };
 

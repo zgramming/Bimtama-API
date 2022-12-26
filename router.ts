@@ -2,6 +2,7 @@ import Router from "koa-router";
 
 import { SettingAccessMenuController } from "./routes/setting/access_menu";
 import { SettingAccessModulController } from "./routes/setting/access_modul";
+import { AuthController } from "./routes/setting/auth";
 import { SettingDocumentationController } from "./routes/setting/documentation";
 import { SettingMasterCategoryController } from "./routes/setting/master_category";
 import { SettingMasterDataController } from "./routes/setting/master_data";
@@ -12,6 +13,9 @@ import { SettingUserController } from "./routes/setting/user";
 import { SettingUserGroupController } from "./routes/setting/user_group";
 
 const router = new Router();
+
+//! Authentication
+router.post(`/login`, AuthController.login);
 
 //! Setting Section
 router.get(`/setting/user`, SettingUserController.getUsers);

@@ -11,8 +11,19 @@ const UsersSeeder = async () => {
       code: "superadmin",
     },
   });
+  const admin = await prisma.appGroupUser.findFirst({
+    where: {
+      code: "admin",
+    },
+  });
 
-  const user = await prisma.appGroupUser.findFirst({ where: { code: "user" } });
+  const dosen = await prisma.appGroupUser.findFirst({
+    where: { code: "dosen" },
+  });
+
+  const mahasiswa = await prisma.appGroupUser.findFirst({
+    where: { code: "mahasiswa" },
+  });
 
   const data = [
     {
@@ -24,14 +35,31 @@ const UsersSeeder = async () => {
       status: "active" as UserStatus,
     },
     {
-      app_group_user_id: user?.id ?? 0,
-      name: "Zeffry Reynando",
-      email: "zeffry.reynando@gmail.com",
-      username: "zeffry",
-      password: hashSync("zeffry", saltRounds),
+      app_group_user_id: mahasiswa?.id ?? 0,
+      name: "Zeffry Reynando Mahasiswa",
+      email: "zeffry.reynando.mahasiswa@gmail.com",
+      username: "zeffrymahasiswa",
+      password: hashSync("zeffrymahasiswa", saltRounds),
+      status: "active" as UserStatus,
+    },
+    {
+      app_group_user_id: dosen?.id ?? 0,
+      name: "Zeffry Reynando Dosen",
+      email: "zeffry.reynando.dosen@gmail.com",
+      username: "zeffrydosen",
+      password: hashSync("zeffrydosen", saltRounds),
+      status: "active" as UserStatus,
+    },
+    {
+      app_group_user_id: admin?.id ?? 0,
+      name: "Zeffry Reynando Admin",
+      email: "zeffry.reynando.admin@gmail.com",
+      username: "zeffryadmin",
+      password: hashSync("zeffryadmin", saltRounds),
       status: "active" as UserStatus,
     },
   ];
+
   await prisma.users.createMany({ data: data });
 };
 
