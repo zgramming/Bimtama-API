@@ -8,7 +8,7 @@ import { ERROR_TYPE_VALIDATION } from '../../utils/constant';
 const prisma = new PrismaClient();
 const validator = new Validator();
 
-export class MahasiswaOutline {
+export class MahasiswaOutlineController {
   public static async get(ctx: ParameterizedContext, next: Next) {
     const result = await prisma.studentOutline.findMany({
       include: { outline: true, user: true },

@@ -4,7 +4,8 @@ import { AdminOutlineController } from "./routes/admin/outline";
 import { AdminOutlineComponentController } from "./routes/admin/outline_component";
 import { DosenGroupController } from "./routes/dosen/group";
 import { DosenGroupMemberController } from "./routes/dosen/group_member";
-import { MahasiswaOutline } from "./routes/mahasiswa/outline";
+import { MahasiswaGroupController } from "./routes/mahasiswa/group";
+import { MahasiswaOutlineController } from "./routes/mahasiswa/outline";
 import { SettingAccessMenuController } from "./routes/setting/access_menu";
 import { SettingAccessModulController } from "./routes/setting/access_modul";
 import { AuthController } from "./routes/setting/auth";
@@ -138,16 +139,25 @@ router.get(
   `/dosen/group-member/by-group-code/:group_code`,
   DosenGroupMemberController.getByGroupCode
 );
-router.post(`/dosen/group-member/join`, DosenGroupMemberController.get);
 
 //! Mahasiswa
+router.get(
+  `/mahasiswa/my-group/:user_id`,
+  MahasiswaGroupController.getByUserId
+);
+router.get(
+  `/mahasiswa/group/search-by-code/:group_code`,
+  MahasiswaGroupController.searchByGroupCode
+);
+router.post(`/mahasiswa/group/join`, MahasiswaGroupController.join);
+router.post(`/mahasiswa/group/exit`, MahasiswaGroupController.exit);
 
-router.get(`/mahasiswa/outline`, MahasiswaOutline.get);
-router.get(`/mahasiswa/outline/:id`, MahasiswaOutline.getById);
+router.get(`/mahasiswa/outline`, MahasiswaOutlineController.get);
+router.get(`/mahasiswa/outline/:id`, MahasiswaOutlineController.getById);
 router.get(
   `/mahasiswa/outline/by-user-id/:user_id`,
-  MahasiswaOutline.getByUserId
+  MahasiswaOutlineController.getByUserId
 );
-router.post(`/mahasiswa/outline`, MahasiswaOutline.upsert);
+router.post(`/mahasiswa/outline`, MahasiswaOutlineController.upsert);
 
 export default router;
