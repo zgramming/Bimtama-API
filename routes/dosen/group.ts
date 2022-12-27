@@ -19,10 +19,12 @@ export class DosenGroupController {
 
   public static async getById(ctx: ParameterizedContext, next: Next) {
     const { id } = ctx.params;
+    
     const result = await prisma.group.findUnique({
       where: { id: +id },
       include: { group_member: true },
     });
+
     return (ctx.body = {
       success: true,
       data: result,

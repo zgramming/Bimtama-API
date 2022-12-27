@@ -1,9 +1,10 @@
 import Router from "koa-router";
+
 import { AdminOutlineController } from "./routes/admin/outline";
 import { AdminOutlineComponentController } from "./routes/admin/outline_component";
 import { DosenGroupController } from "./routes/dosen/group";
 import { DosenGroupMemberController } from "./routes/dosen/group_member";
-
+import { MahasiswaOutline } from "./routes/mahasiswa/outline";
 import { SettingAccessMenuController } from "./routes/setting/access_menu";
 import { SettingAccessModulController } from "./routes/setting/access_modul";
 import { AuthController } from "./routes/setting/auth";
@@ -138,5 +139,15 @@ router.get(
   DosenGroupMemberController.getByGroupCode
 );
 router.post(`/dosen/group-member/join`, DosenGroupMemberController.get);
+
+//! Mahasiswa
+
+router.get(`/mahasiswa/outline`, MahasiswaOutline.get);
+router.get(`/mahasiswa/outline/:id`, MahasiswaOutline.getById);
+router.get(
+  `/mahasiswa/outline/by-user-id/:user_id`,
+  MahasiswaOutline.getByUserId
+);
+router.post(`/mahasiswa/outline`, MahasiswaOutline.upsert);
 
 export default router;

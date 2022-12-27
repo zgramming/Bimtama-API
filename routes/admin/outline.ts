@@ -15,10 +15,9 @@ type OutlineComponentType = {
 };
 
 export class AdminOutlineController {
-
   public static async get(ctx: ParameterizedContext, next: Next) {
     const result = await prisma.outline.findMany({
-      include: { master_outline: true },
+      include: { master_outline: true, outline_component: true },
     });
 
     return (ctx.body = {
@@ -39,7 +38,6 @@ export class AdminOutlineController {
         success: true,
         data: result,
       });
-
     } catch (error) {
       console.log({ error });
       ctx.status = 500;
