@@ -1,6 +1,8 @@
 import Router from "koa-router";
 import { AdminOutlineController } from "./routes/admin/outline";
 import { AdminOutlineComponentController } from "./routes/admin/outline_component";
+import { DosenGroupController } from "./routes/dosen/group";
+import { DosenGroupMemberController } from "./routes/dosen/group_member";
 
 import { SettingAccessMenuController } from "./routes/setting/access_menu";
 import { SettingAccessModulController } from "./routes/setting/access_modul";
@@ -94,13 +96,15 @@ router.post(`/setting/documentation`, SettingDocumentationController.create);
 router.put(`/setting/documentation/:id`, SettingDocumentationController.update);
 router.del(`/setting/documentation/:id`, SettingDocumentationController.delete);
 
+/// Start Application API
+
 //! Admin
 
 router.get(`/admin/outline`, AdminOutlineController.get);
 router.get(`/admin/outline/:id`, AdminOutlineController.getById);
 router.post(`/admin/outline`, AdminOutlineController.create);
 router.put(`/admin/outline/:id`, AdminOutlineController.update);
-router.delete(`/admin/outline/:id`, AdminOutlineController.delete);
+router.del(`/admin/outline/:id`, AdminOutlineController.delete);
 
 router.get(`/admin/outline-component`, AdminOutlineComponentController.get);
 router.get(
@@ -111,5 +115,28 @@ router.get(
   `/admin/outline-component/by-outline-id/:outline_id`,
   AdminOutlineComponentController.getByOutlineId
 );
+
+//! Dosen
+
+router.get(`/dosen/group`, DosenGroupController.get);
+router.get(`/dosen/group/:id`, DosenGroupController.getById);
+router.get(`/dosen/group/by-code/:code`, DosenGroupController.getByCode);
+router.post(`/dosen/group`, DosenGroupController.create);
+router.put(`/dosen/group/:id`, DosenGroupController.update);
+router.del(`/dosen/group/:id`, DosenGroupController.delete);
+
+router.get(`/dosen/active-group/:user_id`, DosenGroupController.getActiveGroup);
+
+router.get(`/dosen/group-member`, DosenGroupMemberController.get);
+router.get(`/dosen/group-member/:id`, DosenGroupMemberController.getById);
+router.get(
+  `/dosen/group-member/by-group-id/:group_id`,
+  DosenGroupMemberController.getByGroupId
+);
+router.get(
+  `/dosen/group-member/by-group-code/:group_code`,
+  DosenGroupMemberController.getByGroupCode
+);
+router.post(`/dosen/group-member/join`, DosenGroupMemberController.get);
 
 export default router;

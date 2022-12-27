@@ -230,13 +230,75 @@ model Users {
   created_by Int?
   updated_by Int?
 
-  app_group_user     AppGroupUser       @relation(fields: [app_group_user_id], references: [id], onDelete: Cascade)
-  student_preference StudentPreference?
+  app_group_user       AppGroupUser        @relation(fields: [app_group_user_id], references: [id], onDelete: Cascade)
+  student_preference   StudentPreference?
+  group_member         GroupMember[]
+  group                Group[]
+  lecture_group_active LectureGroupActive?
 
   @@map("users")
 }
 
-//! Admin
+//! Application
+
+model Group {
+  id          Int     @id @default(autoincrement())
+  name        String  @db.VarChar(100)
+  code        String  @unique @db.VarChar(50)
+  description String? @db.Text()
+  image       String? @db.Text()
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  /// Lecture ID Who Create this group
+  created_by Int
+  updated_by Int?
+
+  group_member         GroupMember[]
+  user                 Users               @relation(fields: [created_by], references: [id], onDelete: Cascade)
+  lecture_group_active LectureGroupActive?
+
+  @@map("group")
+}
+
+model GroupMember {
+  id        String  @id @default(uuid())
+  group_id  Int
+  user_id   Int
+  is_admin  Boolean @default(true)
+  is_active Boolean @default(true)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  created_by Int?
+  updated_by Int?
+
+  group Group @relation(fields: [group_id], references: [id], onDelete: Cascade)
+  user  Users @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  /// User cant be join same group with duplicate [group_id && user_id]
+  @@unique([group_id, user_id])
+  @@map("group_member")
+}
+
+model LectureGroupActive {
+  id       Int @id @default(autoincrement())
+  user_id  Int @unique
+  group_id Int @unique
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  created_by Int?
+  updated_by Int?
+
+  group Group @relation(fields: [group_id], references: [id], onDelete: Cascade)
+  user  Users @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("lecture_group_active")
+}
+
 model Outline {
   id             Int      @id @default(autoincrement())
   mst_outline_id Int
