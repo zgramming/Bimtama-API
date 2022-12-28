@@ -376,6 +376,7 @@ model OutlineComponent {
   mst_outline_component_id Int
   title                    String   @db.VarChar(100)
   description              String?  @db.Text()
+  order                    Int
   created_at               DateTime @default(now())
   updated_at               DateTime @updatedAt
   created_by               Int?

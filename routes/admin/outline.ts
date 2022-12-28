@@ -12,6 +12,7 @@ type OutlineComponentType = {
   mst_outline_component_id: number;
   title: string;
   description?: string;
+  order: number;
 };
 
 export class AdminOutlineController {
@@ -86,12 +87,13 @@ export class AdminOutlineController {
 
         const mapping = (
           mst_outline_component as Array<OutlineComponentType>
-        ).map((val) => {
+        ).map((val, index) => {
           return {
             outline_id: createOutline.id,
             mst_outline_component_id: val.mst_outline_component_id,
             title: val.title,
             description: val.description,
+            order: val.order,
           };
         });
         const createOutlineComponent = await trx.outlineComponent.createMany({
@@ -117,6 +119,7 @@ export class AdminOutlineController {
       });
     }
   }
+
   public static async update(ctx: ParameterizedContext, next: Next) {
     try {
       const { id } = ctx.params;
@@ -162,12 +165,13 @@ export class AdminOutlineController {
 
         const mapping = (
           mst_outline_component as Array<OutlineComponentType>
-        ).map((val) => {
+        ).map((val, index) => {
           return {
             outline_id: createOutline.id,
             mst_outline_component_id: val.mst_outline_component_id,
             title: val.title,
             description: val.description,
+            order: val.order,
           };
         });
 
@@ -186,6 +190,8 @@ export class AdminOutlineController {
         data: transaction,
       });
     } catch (error: any) {
+      console.log({ error: error });
+
       ctx.status = 500;
       const message = error?.message || "Unknown Error Message";
       return (ctx.body = {
