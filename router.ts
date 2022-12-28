@@ -6,6 +6,7 @@ import { DosenGroupController } from "./routes/dosen/group";
 import { DosenGroupMemberController } from "./routes/dosen/group_member";
 import { MahasiswaGroupController } from "./routes/mahasiswa/group";
 import { MahasiswaMeetingScheduleController } from "./routes/mahasiswa/meeting_schedule";
+import { MahasiswaMentorController } from "./routes/mahasiswa/mentor";
 import { MahasiswaOutlineController } from "./routes/mahasiswa/outline";
 import { SettingAccessMenuController } from "./routes/setting/access_menu";
 import { SettingAccessModulController } from "./routes/setting/access_modul";
@@ -168,6 +169,11 @@ router.get(
 router.get(
   `/mahasiswa/meeting-schedule/:user_id/type/:type`,
   MahasiswaMeetingScheduleController.getByUserIdAndType
+);
+
+router.get(
+  `/mahasiswa/my-mentor/:user_id`,
+  MahasiswaMentorController.getMentorByUserId
 );
 
 export default router;
