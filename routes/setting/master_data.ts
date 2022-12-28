@@ -38,6 +38,9 @@ export class SettingMasterDataController {
         master_data_children: true,
         master_data_parent: true,
       },
+      orderBy: {
+        order: "asc",
+      },
       // ...(limit !== 0 && { take: +limit }),
       // ...(offset !== 0 && { skip: +offset }),
     });
@@ -52,6 +55,9 @@ export class SettingMasterDataController {
       const { category_code } = ctx.params;
       const result = await prisma.masterData.findMany({
         where: { master_category_code: category_code },
+        orderBy: {
+          order: "asc",
+        },
       });
 
       return (ctx.body = {
@@ -76,6 +82,7 @@ export class SettingMasterDataController {
         code = "",
         name = "",
         description = "",
+        order = 1,
         status = "active",
         parameter1_key,
         parameter1_value,
@@ -89,6 +96,7 @@ export class SettingMasterDataController {
         code?: string;
         name?: string;
         description?: string;
+        order?: number;
         status?: CommonStatus;
         parameter1_key?: string;
         parameter1_value?: string;
@@ -117,6 +125,7 @@ export class SettingMasterDataController {
           code,
           name,
           description,
+          order,
           status: status,
           parameter1_key,
           parameter1_value,
@@ -149,6 +158,7 @@ export class SettingMasterDataController {
         code = "",
         name = "",
         description = "",
+        order = 1,
         status = "active",
         parameter1_key,
         parameter1_value,
@@ -163,6 +173,7 @@ export class SettingMasterDataController {
         code?: string;
         name?: string;
         description?: string;
+        order?: number;
         status?: CommonStatus;
         parameter1_key?: string;
         parameter1_value?: string;
@@ -184,6 +195,7 @@ export class SettingMasterDataController {
           code,
           name,
           description,
+          order,
           status: status,
           parameter1_key,
           parameter1_value,
