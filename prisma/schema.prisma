@@ -8,11 +8,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum TypeCVPreview {
-  pdf
-  website
-}
-
 enum UserStatus {
   active
   inactive
@@ -23,6 +18,12 @@ enum UserStatus {
 enum CommonStatus {
   active
   inactive
+}
+
+enum GuidanceDetailStatus {
+  rejected
+  progress
+  approved
 }
 
 enum MeetingScheduleType {
@@ -204,8 +205,11 @@ model MasterData {
   master_data_children MasterData[]    @relation(name: "master_data")
   jobs_documentation   Documentation[]
 
-  outline           Outline[]
-  outline_component OutlineComponent[]
+  outline                   Outline[]
+  outline_component         OutlineComponent[]
+  guidance                  Guidance[]
+  guidance_detail           GuidanceDetail[]
+  student_guidance_progress StudentGuidanceProgress[]
 
   @@map("master_data")
 }
@@ -242,12 +246,15 @@ model Users {
   created_by Int?
   updated_by Int?
 
-  app_group_user           AppGroupUser             @relation(fields: [app_group_user_id], references: [id], onDelete: Cascade)
-  student_outline          StudentOutline?
-  group_member             GroupMember[]
-  group                    Group[]
-  lecture_group_active     LectureGroupActive?
-  meeting_schedule_present MeetingSchedulePresent[]
+  app_group_user            AppGroupUser              @relation(fields: [app_group_user_id], references: [id], onDelete: Cascade)
+  student_outline           StudentOutline?
+  group_member              GroupMember[]
+  group                     Group[]
+  lecture_group_active      LectureGroupActive?
+  meeting_schedule_present  MeetingSchedulePresent[]
+  guidance                  Guidance?
+  guidance_detail           GuidanceDetail[]
+  student_guidance_progress StudentGuidanceProgress[]
 
   @@map("users")
 }
@@ -272,6 +279,8 @@ model Group {
   user                 Users               @relation(fields: [created_by], references: [id], onDelete: Cascade)
   lecture_group_active LectureGroupActive?
   meeting_schedule     MeetingSchedule[]
+  guidance             Guidance[]
+  guidance_detail      GuidanceDetail[]
 
   @@map("group")
 }
@@ -285,7 +294,6 @@ model GroupMember {
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
-
   created_by Int?
   updated_by Int?
 
@@ -295,6 +303,48 @@ model GroupMember {
   /// User cant be join same group with duplicate [group_id && user_id]
   @@unique([group_id, user_id])
   @@map("group_member")
+}
+
+model Guidance {
+  id                                       Int     @id @default(autoincrement())
+  user_id                                  Int     @unique
+  group_id                                 Int
+  current_progres_mst_outline_component_id Int
+  title                                    String
+  description                              String?
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  created_by Int?
+  updated_by Int?
+
+  user  Users @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  group Group @relation(fields: [group_id], references: [id], onDelete: Cascade)
+
+  mst_outline_component MasterData       @relation(fields: [current_progres_mst_outline_component_id], references: [id], onDelete: Cascade)
+  guidance_detail       GuidanceDetail[]
+
+  @@map("guidance")
+}
+
+model GuidanceDetail {
+  id                       String               @id @default(uuid())
+  guidance_id              Int
+  user_id                  Int
+  group_id                 Int
+  mst_outline_component_id Int
+  title                    String
+  description              String?              @db.Text()
+  lecture_note             String?              @db.Text()
+  status                   GuidanceDetailStatus @default(progress)
+  file                     String               @db.Text()
+
+  guidance              Guidance   @relation(fields: [guidance_id], references: [id], onDelete: Cascade)
+  user                  Users      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  group                 Group      @relation(fields: [group_id], references: [id], onDelete: Cascade)
+  mst_outline_component MasterData @relation(fields: [mst_outline_component_id], references: [id], onDelete: Cascade)
+
+  @@map("guidance_detail")
 }
 
 model LectureGroupActive {
@@ -386,6 +436,22 @@ model OutlineComponent {
   master_outline_component MasterData @relation(fields: [mst_outline_component_id], references: [id], onDelete: Cascade)
 
   @@map("outline_component")
+}
+
+model StudentGuidanceProgress {
+  id                       Int @id @default(autoincrement())
+  user_id                  Int
+  mst_outline_component_id Int
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  created_by Int?
+  updated_by Int?
+
+  user                  Users      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  mst_outline_component MasterData @relation(fields: [mst_outline_component_id], references: [id], onDelete: Cascade)
+
+  @@map("student_guidance_progress")
 }
 
 model StudentOutline {
