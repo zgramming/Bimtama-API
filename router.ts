@@ -5,6 +5,7 @@ import { AdminOutlineComponentController } from "./routes/admin/outline_componen
 import { DosenGroupController } from "./routes/dosen/group";
 import { DosenGroupMemberController } from "./routes/dosen/group_member";
 import { MahasiswaGroupController } from "./routes/mahasiswa/group";
+import { MahasiswaMeetingScheduleController } from "./routes/mahasiswa/meeting_schedule";
 import { MahasiswaOutlineController } from "./routes/mahasiswa/outline";
 import { SettingAccessMenuController } from "./routes/setting/access_menu";
 import { SettingAccessModulController } from "./routes/setting/access_modul";
@@ -159,5 +160,14 @@ router.get(
   MahasiswaOutlineController.getByUserId
 );
 router.post(`/mahasiswa/outline`, MahasiswaOutlineController.upsert);
+
+router.get(
+  `/mahasiswa/meeting-schedule/:user_id`,
+  MahasiswaMeetingScheduleController.getByUserId
+);
+router.get(
+  `/mahasiswa/meeting-schedule/:user_id/type/:type`,
+  MahasiswaMeetingScheduleController.getByUserIdAndType
+);
 
 export default router;

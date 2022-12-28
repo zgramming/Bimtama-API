@@ -25,6 +25,16 @@ enum CommonStatus {
   inactive
 }
 
+enum MeetingScheduleType {
+  personal
+  group
+}
+
+enum MeetingScheduleMethod {
+  luring
+  daring
+}
+
 model AppGroupUser {
   id     Int          @id @default(autoincrement())
   code   String       @unique @db.VarChar(50)
@@ -230,11 +240,12 @@ model Users {
   created_by Int?
   updated_by Int?
 
-  app_group_user       AppGroupUser        @relation(fields: [app_group_user_id], references: [id], onDelete: Cascade)
-  student_outline      StudentOutline?
-  group_member         GroupMember[]
-  group                Group[]
-  lecture_group_active LectureGroupActive?
+  app_group_user           AppGroupUser             @relation(fields: [app_group_user_id], references: [id], onDelete: Cascade)
+  student_outline          StudentOutline?
+  group_member             GroupMember[]
+  group                    Group[]
+  lecture_group_active     LectureGroupActive?
+  meeting_schedule_present MeetingSchedulePresent[]
 
   @@map("users")
 }
@@ -258,6 +269,7 @@ model Group {
   group_member         GroupMember[]
   user                 Users               @relation(fields: [created_by], references: [id], onDelete: Cascade)
   lecture_group_active LectureGroupActive?
+  meeting_schedule     MeetingSchedule[]
 
   @@map("group")
 }
@@ -297,6 +309,46 @@ model LectureGroupActive {
   user  Users @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@map("lecture_group_active")
+}
+
+model MeetingSchedule {
+  id           Int                   @id @default(autoincrement())
+  group_id     Int
+  title        String                @db.VarChar(100)
+  description  String                @db.Text()
+  type         MeetingScheduleType   @default(group)
+  method       MeetingScheduleMethod @default(luring)
+  link_maps    String?               @db.Text()
+  link_meeting String?               @db.Text()
+  start_date   DateTime
+  end_date     DateTime?
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  created_by Int?
+  updated_by Int?
+
+  group                    Group                    @relation(fields: [group_id], references: [id], onDelete: Cascade)
+  meeting_schedule_present MeetingSchedulePresent[]
+
+  @@map("meeting_schedule")
+}
+
+model MeetingSchedulePresent {
+  id                  String @id @default(uuid())
+  meeting_schedule_id Int
+  user_id             Int
+  group_id            Int
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  created_by Int?
+  updated_by Int?
+
+  meeting_schedule MeetingSchedule @relation(fields: [meeting_schedule_id], references: [id], onDelete: Cascade)
+  user             Users           @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("meeting_schedule_present")
 }
 
 model Outline {
