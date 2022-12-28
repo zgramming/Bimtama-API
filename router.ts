@@ -8,6 +8,7 @@ import { MahasiswaGroupController } from "./routes/mahasiswa/group";
 import { MahasiswaMeetingScheduleController } from "./routes/mahasiswa/meeting_schedule";
 import { MahasiswaMentorController } from "./routes/mahasiswa/mentor";
 import { MahasiswaOutlineController } from "./routes/mahasiswa/outline";
+import { MahasiswaProfileController } from "./routes/mahasiswa/profile";
 import { SettingAccessMenuController } from "./routes/setting/access_menu";
 import { SettingAccessModulController } from "./routes/setting/access_modul";
 import { AuthController } from "./routes/setting/auth";
@@ -175,5 +176,8 @@ router.get(
   `/mahasiswa/my-mentor/:user_id`,
   MahasiswaMentorController.getMentorByUserId
 );
+
+router.get(`/mahasiswa/profile/:user_id`, MahasiswaProfileController.getById);
+router.put(`/mahasiswa/profile`, MahasiswaProfileController.update);
 
 export default router;
