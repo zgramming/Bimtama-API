@@ -11,3 +11,5 @@ export const AVAILABLE_ACCESS_MENU = [
 
 export const keyCookieAuth = "user_auth_cookies";
 export const ERROR_TYPE_VALIDATION = "VALIDATION_ERROR";
+export const basePublicFileDir = `${process.cwd()}/public/file`;
+export const basePublicImageDir = `${process.cwd()}/public/image`;

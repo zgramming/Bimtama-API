@@ -5,6 +5,7 @@ import { PrismaClient } from "@prisma/client";
 
 import { ERROR_TYPE_VALIDATION } from "../../utils/constant";
 import { KoaContext } from "../../utils/types";
+import { HTTP_RESPONSE_CODE } from "../../utils/http_response_code";
 
 const prisma = new PrismaClient();
 const validator = new Validator();
@@ -58,7 +59,7 @@ export class MahasiswaOutlineController {
       });
 
       if (validate !== true) {
-        ctx.status = 400;
+        ctx.status = HTTP_RESPONSE_CODE.BAD_REQUEST;
         return (ctx.body = {
           success: false,
           type: ERROR_TYPE_VALIDATION,
@@ -70,6 +71,21 @@ export class MahasiswaOutlineController {
         outline_id,
         user_id,
       };
+
+      const studentGuidance = await prisma.guidance.findUnique({
+        where: { user_id: +user_id },
+      });
+
+      /// Jika mahasiswa sedang melakukan bimbingan, tidak bisa untuk berganti outline kembali
+      if (studentGuidance) {
+        ctx.status = HTTP_RESPONSE_CODE.FORBIDDEN;
+        return (ctx.body = {
+          success: false,
+          message:
+            "Tidak bisa menyimpan outline, karena kamu sedang dalam bimbingan",
+        });
+      }
+
       const upsert = await prisma.studentOutline.upsert({
         where: { user_id: +user_id },
         create: data,

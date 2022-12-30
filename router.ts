@@ -1,6 +1,5 @@
 import { Context, DefaultState } from "koa";
 import Router from "koa-router";
-import path from "path";
 
 import { AdminOutlineController } from "./routes/admin/outline";
 import { AdminOutlineComponentController } from "./routes/admin/outline_component";
@@ -23,8 +22,8 @@ import { SettingModulController } from "./routes/setting/modul";
 import { SettingParameterController } from "./routes/setting/parameter";
 import { SettingUserController } from "./routes/setting/user";
 import { SettingUserGroupController } from "./routes/setting/user_group";
-import { generateUUID } from "./utils/function";
 import koaBody from "koa-body";
+import { validateJWTToken } from "./middleware/validate_jwt_token_middleware";
 
 const router = new Router<DefaultState, Context>();
 
@@ -110,109 +109,192 @@ router.del(`/setting/documentation/:id`, SettingDocumentationController.delete);
 
 //! Admin
 
-router.get(`/admin/outline`, AdminOutlineController.get);
-router.get(`/admin/outline/:id`, AdminOutlineController.getById);
-router.post(`/admin/outline`, AdminOutlineController.create);
-router.put(`/admin/outline/:id`, AdminOutlineController.update);
-router.del(`/admin/outline/:id`, AdminOutlineController.delete);
+router.get(`/admin/outline`, validateJWTToken, AdminOutlineController.get);
+router.get(
+  `/admin/outline/:id`,
+  validateJWTToken,
+  AdminOutlineController.getById
+);
+router.post(`/admin/outline`, validateJWTToken, AdminOutlineController.create);
+router.put(
+  `/admin/outline/:id`,
+  validateJWTToken,
+  AdminOutlineController.update
+);
+router.del(
+  `/admin/outline/:id`,
+  validateJWTToken,
+  AdminOutlineController.delete
+);
 
-router.get(`/admin/outline-component`, AdminOutlineComponentController.get);
+router.get(
+  `/admin/outline-component`,
+  validateJWTToken,
+  AdminOutlineComponentController.get
+);
 router.get(
   `/admin/outline-component/:id`,
+  validateJWTToken,
   AdminOutlineComponentController.getById
 );
 router.get(
   `/admin/outline-component/by-outline-id/:outline_id`,
+  validateJWTToken,
   AdminOutlineComponentController.getByOutlineId
 );
 
 //! Dosen
 
-router.get(`/dosen/group`, DosenGroupController.get);
-router.get(`/dosen/group/:id`, DosenGroupController.getById);
-router.get(`/dosen/group/by-code/:code`, DosenGroupController.getByCode);
-router.post(`/dosen/group`, DosenGroupController.create);
-router.put(`/dosen/group/:id`, DosenGroupController.update);
-router.del(`/dosen/group/:id`, DosenGroupController.delete);
+router.get(`/dosen/group`, validateJWTToken, DosenGroupController.get);
+router.get(`/dosen/group/:id`, validateJWTToken, DosenGroupController.getById);
+router.get(
+  `/dosen/group/by-code/:code`,
+  validateJWTToken,
+  DosenGroupController.getByCode
+);
+router.post(`/dosen/group`, validateJWTToken, DosenGroupController.create);
+router.put(`/dosen/group/:id`, validateJWTToken, DosenGroupController.update);
+router.del(`/dosen/group/:id`, validateJWTToken, DosenGroupController.delete);
 
-router.get(`/dosen/active-group/:user_id`, DosenGroupController.getActiveGroup);
+router.get(
+  `/dosen/active-group/:user_id`,
+  validateJWTToken,
+  DosenGroupController.getActiveGroup
+);
 
 router.get(`/dosen/group-member`, DosenGroupMemberController.get);
-router.get(`/dosen/group-member/:id`, DosenGroupMemberController.getById);
+router.get(
+  `/dosen/group-member/:id`,
+  validateJWTToken,
+  DosenGroupMemberController.getById
+);
 router.get(
   `/dosen/group-member/by-group-id/:group_id`,
+  validateJWTToken,
   DosenGroupMemberController.getByGroupId
 );
 router.get(
   `/dosen/group-member/by-group-code/:group_code`,
+  validateJWTToken,
   DosenGroupMemberController.getByGroupCode
 );
 
 //! Mahasiswa
 router.get(
   `/mahasiswa/my-group/:user_id`,
+  validateJWTToken,
   MahasiswaGroupController.getByUserId
 );
 router.get(
   `/mahasiswa/group/search-by-code/:group_code`,
+  validateJWTToken,
   MahasiswaGroupController.searchByGroupCode
 );
-router.post(`/mahasiswa/group/join`, MahasiswaGroupController.join);
-router.post(`/mahasiswa/group/exit`, MahasiswaGroupController.exit);
+router.post(
+  `/mahasiswa/group/join`,
+  validateJWTToken,
+  MahasiswaGroupController.join
+);
+router.post(
+  `/mahasiswa/group/exit`,
+  validateJWTToken,
+  MahasiswaGroupController.exit
+);
 
-router.get(`/mahasiswa/outline`, MahasiswaOutlineController.get);
-router.get(`/mahasiswa/outline/:id`, MahasiswaOutlineController.getById);
+router.get(
+  `/mahasiswa/outline`,
+  validateJWTToken,
+  MahasiswaOutlineController.get
+);
+router.get(
+  `/mahasiswa/outline/:id`,
+  validateJWTToken,
+  MahasiswaOutlineController.getById
+);
 router.get(
   `/mahasiswa/outline/by-user-id/:user_id`,
+  validateJWTToken,
   MahasiswaOutlineController.getByUserId
 );
-router.post(`/mahasiswa/outline`, MahasiswaOutlineController.upsert);
+router.post(
+  `/mahasiswa/outline`,
+  validateJWTToken,
+  MahasiswaOutlineController.upsert
+);
 
 router.get(
   `/mahasiswa/meeting-schedule/:user_id`,
+  validateJWTToken,
   MahasiswaMeetingScheduleController.getByUserId
 );
 router.get(
   `/mahasiswa/meeting-schedule/:user_id/type/:type`,
+  validateJWTToken,
   MahasiswaMeetingScheduleController.getByUserIdAndType
 );
 
 router.get(
   `/mahasiswa/my-mentor/:user_id`,
+  validateJWTToken,
   MahasiswaMentorController.getMentorByUserId
 );
 
-router.get(`/mahasiswa/profile/:user_id`, MahasiswaProfileController.getById);
-router.put(`/mahasiswa/profile`, MahasiswaProfileController.update);
+router.get(
+  `/mahasiswa/profile/:user_id`,
+  validateJWTToken,
+  MahasiswaProfileController.getById
+);
+router.put(
+  `/mahasiswa/profile`,
+  validateJWTToken,
+  MahasiswaProfileController.update
+);
 
-router.get(`/mahasiswa/guidance/:user_id`, MahasiswaGuidanceController.get);
+router.get(
+  `/mahasiswa/guidance/:user_id`,
+  validateJWTToken,
+  MahasiswaGuidanceController.get
+);
 router.get(
   `/mahasiswa/guidance/outline/:user_id`,
+  validateJWTToken,
   MahasiswaGuidanceController.getOutline
 );
 router.post(
+  `/mahasiswa/guidance/submission/start`,
+  koaBody({ multipart: true }),
+  validateJWTToken,
+  MahasiswaGuidanceController.start
+);
+router.post(
   `/mahasiswa/guidance/submission/proposal-title`,
-  MahasiswaGuidanceController.upsertProposalTitle
+  validateJWTToken,
+  MahasiswaGuidanceController.submissionTitle
 );
 router.post(
   `/mahasiswa/guidance/submission/bab1`,
+  validateJWTToken,
   koaBody({ multipart: true }),
   MahasiswaGuidanceController.submissionBab1
 );
 router.post(
   `/mahasiswa/guidance/submission/bab2`,
+  validateJWTToken,
   MahasiswaGuidanceController.submissionBab2
 );
 router.post(
   `/mahasiswa/guidance/submission/bab3`,
+  validateJWTToken,
   MahasiswaGuidanceController.submissionBab3
 );
 router.post(
   `/mahasiswa/guidance/submission/bab4`,
+  validateJWTToken,
   MahasiswaGuidanceController.submissionBab4
 );
 router.post(
   `/mahasiswa/guidance/submission/bab5`,
+  validateJWTToken,
   MahasiswaGuidanceController.submissionBab5
 );
 

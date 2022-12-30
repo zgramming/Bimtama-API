@@ -1,15 +1,11 @@
-import jwt, {
-  JsonWebTokenError,
-  JwtPayload,
-  TokenExpiredError,
-} from "jsonwebtoken";
-import { Next, ParameterizedContext } from "koa";
+import jwt from "jsonwebtoken";
 
 import { Users } from "@prisma/client";
 
 import { keyCookieAuth } from "./constant";
+import { KoaContext } from "./types";
 
-export const setCookiesUser = (ctx: ParameterizedContext, user: Users) => {
+export const setCookiesUser = (ctx: KoaContext, user: Users) => {
   const isDev = process.env.APP_ENV == "dev";
   const baseDomain = isDev ? undefined : process.env.BASE_DOMAIN;
   const token = generateToken(user);
@@ -25,7 +21,7 @@ export const setCookiesUser = (ctx: ParameterizedContext, user: Users) => {
   return true;
 };
 
-export const destroyCookiesUser = (ctx: ParameterizedContext) => {
+export const destroyCookiesUser = (ctx: KoaContext) => {
   const isDev = process.env.APP_ENV == "dev";
   const baseDomain = isDev ? undefined : process.env.BASE_DOMAIN;
   ctx.cookies.set(keyCookieAuth, "", {
@@ -58,52 +54,4 @@ export const generateToken = (user: Users) => {
   //   console.log({ token, decode: decode.payload });
 
   return token;
-};
-
-export const verifyToken = (ctx: ParameterizedContext, next: Next) => {
-  // return next();
-  try {
-    const secretKey = process.env.JWT_SECRECT_KEY ?? "-";
-    const [authMethod, token] = ctx.headers["authorization"]?.split(" ") ?? [];
-    if (!token) {
-      ctx.status = 401;
-      return (ctx.body = {
-        message: "Unauthorized, Token required",
-      });
-    }
-
-    const verify = jwt.verify(token, secretKey);
-
-    /// key[payload] didapat dari config jwt.sign();
-    const { payload, iat, exp } = verify as JwtPayload;
-    const { user } = payload;
-
-    if (!user) {
-      ctx.status = 403;
-      return (ctx.body = {
-        message: "Token invalid",
-        success: false,
-      });
-    }
-    return next();
-  } catch (error: any) {
-    ctx.status = 500;
-    let data: { message: string; stackTrace?: string } = {
-      message: error?.message ?? "Unknown Message Error",
-    };
-
-    if (
-      error instanceof JsonWebTokenError ||
-      error instanceof TokenExpiredError
-    ) {
-      ctx.status = 403;
-      if (error instanceof TokenExpiredError) {
-        /// Remove token from cookie
-        /// And force user to login again
-      }
-      data = { ...data, message: error.message, stackTrace: error.stack };
-    }
-
-    return (ctx.body = data);
-  }
 };

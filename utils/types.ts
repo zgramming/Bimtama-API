@@ -1,4 +1,3 @@
-import { Context, ParameterizedContext } from "koa";
-import { IRouterParamContext } from "koa-router";
+import { Context } from "koa";
 
 export type KoaContext = Context;

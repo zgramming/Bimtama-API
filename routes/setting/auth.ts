@@ -55,7 +55,7 @@ export class AuthController {
         success: true,
         message: "Berhasil login",
         data: user,
-        token: generateToken(user!),
+        token: generateToken(user),
       });
     } catch (error: any) {
       ctx.status = 500;
