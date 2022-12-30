@@ -6,6 +6,7 @@ import { PrismaClient } from "@prisma/client";
 import { basePublicFileDir, ERROR_TYPE_VALIDATION } from "../../utils/constant";
 import { KoaContext } from "../../utils/types";
 import { moveFile, validateFile } from "../../utils/function";
+import { HTTP_RESPONSE_CODE } from "../../utils/http_response_code";
 
 const prisma = new PrismaClient();
 const validator = new Validator();
@@ -58,6 +59,42 @@ export class MahasiswaGuidanceController {
     });
   }
 
+  public static async getGuidanceDetail(ctx: KoaContext, next: Next) {
+    try {
+      const { user_id, codeMasterOutlineComponent } = ctx.params;
+      const mstOutlineComponent = await prisma.masterData.findUnique({
+        where: { code: codeMasterOutlineComponent },
+      });
+
+      if (!mstOutlineComponent) {
+        ctx.status = HTTP_RESPONSE_CODE.NOT_FOUND;
+        return (ctx.body = {
+          success: false,
+          message: `Outline Component dengan kode ${codeMasterOutlineComponent} tidak ditemukan, pastikan master data tersedia.`,
+        });
+      }
+
+      const guidanceDetail = await prisma.guidanceDetail.findMany({
+        orderBy: { created_at: "desc" },
+        where: { user_id: +user_id },
+      });
+
+      return (ctx.body = {
+        success: true,
+        message: "Berhasil mendapatkan Detail Bimbingan",
+        data: guidanceDetail,
+      });
+    } catch (error: any) {
+      ctx.status = HTTP_RESPONSE_CODE.INTERNAL_SERVER_ERROR;
+
+      const message = error?.message || "Unknown Error Message";
+      return (ctx.body = {
+        success: false,
+        message: message,
+      });
+    }
+  }
+
   public static async start(ctx: KoaContext, next: Next) {
     try {
       const { user_id } = ctx.request.body;
@@ -85,7 +122,7 @@ export class MahasiswaGuidanceController {
       });
 
       if (!groupMember) {
-        ctx.status = 404;
+        ctx.status = HTTP_RESPONSE_CODE.NOT_FOUND;
         return (ctx.body = {
           success: false,
           message:
@@ -99,7 +136,7 @@ export class MahasiswaGuidanceController {
       });
 
       if (!studentOutline) {
-        ctx.status = 404;
+        ctx.status = HTTP_RESPONSE_CODE.NOT_FOUND;
         return (ctx.body = {
           success: true,
           message:
@@ -109,11 +146,11 @@ export class MahasiswaGuidanceController {
 
       const outlineComponentFirst = await prisma.outlineComponent.findFirst({
         orderBy: { order: "asc" },
-        where: { outline_id: studentOutline.id },
+        where: { outline_id: studentOutline.outline_id },
       });
 
       if (!outlineComponentFirst) {
-        ctx.status = 404;
+        ctx.status = HTTP_RESPONSE_CODE.NOT_FOUND;
         return (ctx.body = {
           success: true,
           message: `Outline Component untuk outline ${studentOutline.outline.title} tidak ditemukan`,
@@ -142,7 +179,8 @@ export class MahasiswaGuidanceController {
         data: upsert,
       });
     } catch (error: any) {
-      ctx.status = 500;
+      ctx.status = HTTP_RESPONSE_CODE.INTERNAL_SERVER_ERROR;
+
       const message = error?.message || "Unknown Error Message";
       return (ctx.body = {
         success: false,
@@ -179,7 +217,7 @@ export class MahasiswaGuidanceController {
       });
 
       if (!mstOutlineComponent) {
-        ctx.status = 404;
+        ctx.status = HTTP_RESPONSE_CODE.NOT_FOUND;
         return (ctx.body = {
           success: false,
           message: `Outline Component dengan kode ${codeMstOutlineComponentJudul} tidak ditemukan, pastikan master data tersedia.`,
@@ -191,10 +229,27 @@ export class MahasiswaGuidanceController {
       });
 
       if (!guidance) {
-        ctx.status = 404;
+        ctx.status = HTTP_RESPONSE_CODE.NOT_FOUND;
         return (ctx.body = {
           success: false,
           message: "Kamu belum memulai bimbingan",
+        });
+      }
+
+      const submissionProgress = await prisma.guidanceDetail.findFirst({
+        where: {
+          status: "progress",
+          user_id: +user_id,
+          mst_outline_component_id: mstOutlineComponent.id,
+        },
+      });
+
+      if (submissionProgress) {
+        ctx.status = HTTP_RESPONSE_CODE.FORBIDDEN;
+        return (ctx.body = {
+          success: false,
+          message:
+            "Kamu masih mempunyai submission yang masih progress. Mohon tunggu dosen pembimbing untuk memeriksa submission kamu.",
         });
       }
 
@@ -218,7 +273,7 @@ export class MahasiswaGuidanceController {
           "Berhasil menyimpan Proposal Judul, mohon tunggu dosen pembimbing untuk memeriksa pengajuan kamu.",
       });
     } catch (error: any) {
-      ctx.status = 500;
+      ctx.status = HTTP_RESPONSE_CODE.INTERNAL_SERVER_ERROR;
       const message = error?.message || "Unknown Error Message";
       return (ctx.body = {
         success: false,
@@ -256,7 +311,7 @@ export class MahasiswaGuidanceController {
       });
 
       if (!mstOutlineComponent) {
-        ctx.status = 404;
+        ctx.status = HTTP_RESPONSE_CODE.NOT_FOUND;
         return (ctx.body = {
           success: false,
           message: `Outline Component dengan kode ${codeMstOutlineComponentBab1} tidak ditemukan, pastikan master data tersedia.`,
@@ -268,7 +323,7 @@ export class MahasiswaGuidanceController {
       });
 
       if (!guidance) {
-        ctx.status = 404;
+        ctx.status = HTTP_RESPONSE_CODE.NOT_FOUND;
         return (ctx.body = {
           success: false,
           message: "Kamu belum memulai bimbingan",
@@ -335,7 +390,7 @@ export class MahasiswaGuidanceController {
           "Berhasil menyimpan Proposal Judul, mohon tunggu dosen pembimbing untuk memeriksa pengajuan kamu.",
       });
     } catch (error: any) {
-      ctx.status = 500;
+      ctx.status = HTTP_RESPONSE_CODE.INTERNAL_SERVER_ERROR;
       const message = error?.message || "Unknown Error Message";
       return (ctx.body = {
         success: false,
@@ -347,7 +402,7 @@ export class MahasiswaGuidanceController {
   public static async submissionBab2(ctx: KoaContext, next: Next) {
     try {
     } catch (error: any) {
-      ctx.status = 500;
+      ctx.status = HTTP_RESPONSE_CODE.INTERNAL_SERVER_ERROR;
       const message = error?.message || "Unknown Error Message";
       return (ctx.body = {
         success: false,
@@ -359,7 +414,7 @@ export class MahasiswaGuidanceController {
   public static async submissionBab3(ctx: KoaContext, next: Next) {
     try {
     } catch (error: any) {
-      ctx.status = 500;
+      ctx.status = HTTP_RESPONSE_CODE.INTERNAL_SERVER_ERROR;
       const message = error?.message || "Unknown Error Message";
       return (ctx.body = {
         success: false,
@@ -371,7 +426,7 @@ export class MahasiswaGuidanceController {
   public static async submissionBab4(ctx: KoaContext, next: Next) {
     try {
     } catch (error: any) {
-      ctx.status = 500;
+      ctx.status = HTTP_RESPONSE_CODE.INTERNAL_SERVER_ERROR;
       const message = error?.message || "Unknown Error Message";
       return (ctx.body = {
         success: false,
@@ -384,7 +439,7 @@ export class MahasiswaGuidanceController {
     try {
     } catch (error: any) {
       ctx.request.files;
-      ctx.status = 500;
+      ctx.status = HTTP_RESPONSE_CODE.INTERNAL_SERVER_ERROR;
       const message = error?.message || "Unknown Error Message";
       return (ctx.body = {
         success: false,

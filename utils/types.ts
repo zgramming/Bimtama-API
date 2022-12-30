@@ -1,3 +1,3 @@
-import { Context } from "koa";
+import { Context, DefaultContext } from "koa";
 
 export type KoaContext = Context;

@@ -339,6 +339,11 @@ model GuidanceDetail {
   status                   GuidanceDetailStatus @default(progress)
   file                     String?              @db.Text()
 
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  created_by Int?
+  updated_by Int?
+
   guidance              Guidance   @relation(fields: [guidance_id], references: [id], onDelete: Cascade)
   user                  Users      @relation(fields: [user_id], references: [id], onDelete: Cascade)
   group                 Group      @relation(fields: [group_id], references: [id], onDelete: Cascade)

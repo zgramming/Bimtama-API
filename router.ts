@@ -22,7 +22,6 @@ import { SettingModulController } from "./routes/setting/modul";
 import { SettingParameterController } from "./routes/setting/parameter";
 import { SettingUserController } from "./routes/setting/user";
 import { SettingUserGroupController } from "./routes/setting/user_group";
-import koaBody from "koa-body";
 import { validateJWTToken } from "./middleware/validate_jwt_token_middleware";
 
 const router = new Router<DefaultState, Context>();
@@ -256,13 +255,17 @@ router.get(
   MahasiswaGuidanceController.get
 );
 router.get(
+  `/mahasiswa/guidance/detail/:user_id/code/:codeMasterOutlineComponent`,
+  // validateJWTToken,
+  MahasiswaGuidanceController.getGuidanceDetail
+);
+router.get(
   `/mahasiswa/guidance/outline/:user_id`,
   validateJWTToken,
   MahasiswaGuidanceController.getOutline
 );
 router.post(
   `/mahasiswa/guidance/submission/start`,
-  koaBody({ multipart: true }),
   validateJWTToken,
   MahasiswaGuidanceController.start
 );
@@ -274,7 +277,6 @@ router.post(
 router.post(
   `/mahasiswa/guidance/submission/bab1`,
   validateJWTToken,
-  koaBody({ multipart: true }),
   MahasiswaGuidanceController.submissionBab1
 );
 router.post(
