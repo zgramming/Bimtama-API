@@ -1,10 +1,11 @@
 import { Next, ParameterizedContext } from "koa";
 
 import { PrismaClient } from "@prisma/client";
+import { KoaContext } from "../../utils/types";
 
 const prisma = new PrismaClient();
 export class SettingAccessMenuController {
-  public static async get(ctx: ParameterizedContext, next: Next) {
+  public static async get(ctx: KoaContext, next: Next) {
     const {
       app_group_user_id = 0,
       app_modul_id = 0,
@@ -32,7 +33,7 @@ export class SettingAccessMenuController {
     return (ctx.body = { success: true, data: result });
   }
 
-  public static async getByUserGroup(ctx: ParameterizedContext, next: Next) {
+  public static async getByUserGroup(ctx: KoaContext, next: Next) {
     const { app_group_user_id } = ctx.params;
     const { route }: { route?: string } = ctx.query;
     const routeModul = !route
@@ -59,7 +60,7 @@ export class SettingAccessMenuController {
     return (ctx.body = { success: true, data: result });
   }
 
-  public static async create(ctx: ParameterizedContext, next: Next) {
+  public static async create(ctx: KoaContext, next: Next) {
     try {
       const {
         app_group_user_id = 0,

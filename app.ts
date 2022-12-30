@@ -19,11 +19,7 @@ app.proxy = true;
 /// Passport initialize
 app.keys = [process.env.KOA_SESSION_SECRET ?? ""];
 app.use(session({}, app));
-app.use(
-  KoaBody({
-    multipart: true,
-  })
-);
+app.use(KoaBody());
 
 app.use(cors());
 app.use(Json());

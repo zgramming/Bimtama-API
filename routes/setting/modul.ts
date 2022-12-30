@@ -1,11 +1,12 @@
 import { Next, ParameterizedContext } from "koa";
 
 import { CommonStatus, PrismaClient } from "@prisma/client";
+import { KoaContext } from "../../utils/types";
 
 const prisma = new PrismaClient();
 
 export class SettingModulController {
-  public static async getModul(ctx: ParameterizedContext, next: Next) {
+  public static async getModul(ctx: KoaContext, next: Next) {
     const {
       code = "",
       name = "",
@@ -41,7 +42,7 @@ export class SettingModulController {
     return (ctx.body = { success: true, data: result });
   }
 
-  public static async createModul(ctx: ParameterizedContext, next: Next) {
+  public static async createModul(ctx: KoaContext, next: Next) {
     try {
       const {
         code = "",
@@ -88,7 +89,7 @@ export class SettingModulController {
     }
   }
 
-  public static async updateModul(ctx: ParameterizedContext, next: Next) {
+  public static async updateModul(ctx: KoaContext, next: Next) {
     try {
       const { id = 0 }: { id?: number } = ctx.params;
       const {
@@ -138,7 +139,7 @@ export class SettingModulController {
     }
   }
 
-  public static async deleteModul(ctx: ParameterizedContext, next: Next) {
+  public static async deleteModul(ctx: KoaContext, next: Next) {
     try {
       const { id = 0 }: { id?: number } = ctx.params;
       if (id == 0) ctx.throw("ID is required", 400);

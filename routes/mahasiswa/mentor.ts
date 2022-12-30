@@ -1,11 +1,12 @@
-import { Next, ParameterizedContext } from "koa";
+import { Next } from "koa";
 
 import { PrismaClient } from "@prisma/client";
+import { KoaContext } from "../../utils/types";
 
 const prisma = new PrismaClient();
 
 export class MahasiswaMentorController {
-  public static async getMentorByUserId(ctx: ParameterizedContext, next: Next) {
+  public static async getMentorByUserId(ctx: KoaContext, next: Next) {
     const { user_id } = ctx.params;
     const groupMember = await prisma.groupMember.findFirst({
       where: {

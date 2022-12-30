@@ -6,13 +6,14 @@ import { PrismaClient, UserStatus } from "@prisma/client";
 
 import { ERROR_TYPE_VALIDATION } from "../../utils/constant";
 import { generateToken, setCookiesUser } from "../../utils/token";
+import { KoaContext } from "../../utils/types";
 
 const validator = new Validator();
 const prisma = new PrismaClient();
 const saltRounds = 10;
 
 export class SettingUserController {
-  public static async getUsers(ctx: ParameterizedContext, next: Next) {
+  public static async getUsers(ctx: KoaContext, next: Next) {
     const {
       username,
       name,
@@ -47,7 +48,7 @@ export class SettingUserController {
     return (ctx.body = { success: true, data: users });
   }
 
-  public static async createUsers(ctx: ParameterizedContext, next: Next) {
+  public static async createUsers(ctx: KoaContext, next: Next) {
     try {
       const {
         app_group_user_id = 0,
@@ -96,7 +97,7 @@ export class SettingUserController {
     }
   }
 
-  public static async updateUsers(ctx: ParameterizedContext, next: Next) {
+  public static async updateUsers(ctx: KoaContext, next: Next) {
     try {
       const { id = 0 }: { id?: number } = ctx.params;
       const {
@@ -150,7 +151,7 @@ export class SettingUserController {
     }
   }
 
-  public static async updateNameUsers(ctx: ParameterizedContext, next: Next) {
+  public static async updateNameUsers(ctx: KoaContext, next: Next) {
     try {
       const { id } = ctx.params;
       const { name } = ctx.request.body;
@@ -202,7 +203,7 @@ export class SettingUserController {
     }
   }
 
-  public static async deleteUsers(ctx: ParameterizedContext, next: Next) {
+  public static async deleteUsers(ctx: KoaContext, next: Next) {
     try {
       const { id = 0 }: { id?: number } = ctx.params;
       if (id == 0) ctx.throw("ID is required", 400);

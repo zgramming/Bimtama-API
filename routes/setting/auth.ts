@@ -5,11 +5,12 @@ import Validator from "fastest-validator";
 import { ERROR_TYPE_VALIDATION } from "../../utils/constant";
 import { generateToken } from "../../utils/token";
 import { compare } from "bcrypt";
+import { KoaContext } from "../../utils/types";
 const prisma = new PrismaClient();
 const validator = new Validator();
 
 export class AuthController {
-  public static async login(ctx: ParameterizedContext, next: Next) {
+  public static async login(ctx: KoaContext, next: Next) {
     try {
       const { username, password } = ctx.request.body;
 
@@ -53,7 +54,7 @@ export class AuthController {
       return (ctx.body = {
         success: true,
         message: "Berhasil login",
-        data: user, 
+        data: user,
         token: generateToken(user!),
       });
     } catch (error: any) {

@@ -1,10 +1,11 @@
-import { Next, ParameterizedContext } from "koa";
+import { Next } from "koa";
 
 import { CommonStatus, PrismaClient } from "@prisma/client";
+import { KoaContext } from "../../utils/types";
 
 const prisma = new PrismaClient();
 export class SettingMasterCategoryController {
-  public static async get(ctx: ParameterizedContext, next: Next) {
+  public static async get(ctx: KoaContext, next: Next) {
     const {
       code = "",
       name = "",
@@ -37,7 +38,7 @@ export class SettingMasterCategoryController {
     return (ctx.body = { success: true, data: result });
   }
 
-  public static async create(ctx: ParameterizedContext, next: Next) {
+  public static async create(ctx: KoaContext, next: Next) {
     try {
       const {
         master_category_id = 0,
@@ -82,7 +83,7 @@ export class SettingMasterCategoryController {
     }
   }
 
-  public static async update(ctx: ParameterizedContext, next: Next) {
+  public static async update(ctx: KoaContext, next: Next) {
     try {
       const { id = 0 }: { id?: number } = ctx.params;
       const {
@@ -132,7 +133,7 @@ export class SettingMasterCategoryController {
     }
   }
 
-  public static async delete(ctx: ParameterizedContext, next: Next) {
+  public static async delete(ctx: KoaContext, next: Next) {
     try {
       const { id = 0 }: { id?: number } = ctx.params;
       if (id == 0) ctx.throw("ID is required", 400);

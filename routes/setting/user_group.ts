@@ -1,11 +1,12 @@
 import { Next, ParameterizedContext } from "koa";
 
 import { CommonStatus, PrismaClient } from "@prisma/client";
+import { KoaContext } from "../../utils/types";
 
 const prisma = new PrismaClient();
 
 export class SettingUserGroupController {
-  public static async getUserGroup(ctx: ParameterizedContext, next: Next) {
+  public static async getUserGroup(ctx: KoaContext, next: Next) {
     const {
       name,
       status,
@@ -37,7 +38,7 @@ export class SettingUserGroupController {
     return (ctx.body = { success: true, data: userGroup });
   }
 
-  public static async createUserGroup(ctx: ParameterizedContext, next: Next) {
+  public static async createUserGroup(ctx: KoaContext, next: Next) {
     try {
       const {
         code,
@@ -72,7 +73,7 @@ export class SettingUserGroupController {
     }
   }
 
-  public static async updateUserGroup(ctx: ParameterizedContext, next: Next) {
+  public static async updateUserGroup(ctx: KoaContext, next: Next) {
     try {
       const { id = 0 }: { id?: number } = ctx.params;
       const {
@@ -116,7 +117,7 @@ export class SettingUserGroupController {
     }
   }
 
-  public static async deleteUserGroup(ctx: ParameterizedContext, next: Next) {
+  public static async deleteUserGroup(ctx: KoaContext, next: Next) {
     try {
       const { id = 0 }: { id?: number } = ctx.params;
 

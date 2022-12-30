@@ -4,12 +4,14 @@ import { Next, ParameterizedContext } from "koa";
 import { PrismaClient } from "@prisma/client";
 
 import { ERROR_TYPE_VALIDATION } from "../../utils/constant";
+import { IRouterParamContext } from "koa-router";
+import { KoaContext } from "../../utils/types";
 
 const prisma = new PrismaClient();
 const validator = new Validator();
 
 export class MahasiswaGroupController {
-  public static async getByUserId(ctx: ParameterizedContext, next: Next) {
+  public static async getByUserId(ctx: KoaContext, next: Next) {
     const { user_id } = ctx.params;
 
     const groupMember = await prisma.groupMember.findFirst({
@@ -48,7 +50,7 @@ export class MahasiswaGroupController {
     });
   }
 
-  public static async searchByGroupCode(ctx: ParameterizedContext, next: Next) {
+  public static async searchByGroupCode(ctx: KoaContext, next: Next) {
     const { group_code } = ctx.params;
     const result = await prisma.group.findUnique({
       where: {
@@ -74,7 +76,7 @@ export class MahasiswaGroupController {
     });
   }
 
-  public static async join(ctx: ParameterizedContext, next: Next) {
+  public static async join(ctx: KoaContext, next: Next) {
     try {
       const { group_id, user_id } = ctx.request.body;
 
@@ -123,7 +125,7 @@ export class MahasiswaGroupController {
     }
   }
 
-  public static async exit(ctx: ParameterizedContext, next: Next) {
+  public static async exit(ctx: KoaContext, next: Next) {
     try {
       const { user_id, group_id } = ctx.request.body;
 
@@ -144,7 +146,7 @@ export class MahasiswaGroupController {
           message: validate,
         });
       }
-            
+
       const del = await prisma.groupMember.deleteMany({
         where: { user_id: user_id },
       });

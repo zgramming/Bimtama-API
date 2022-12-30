@@ -337,7 +337,7 @@ model GuidanceDetail {
   description              String?              @db.Text()
   lecture_note             String?              @db.Text()
   status                   GuidanceDetailStatus @default(progress)
-  file                     String               @db.Text()
+  file                     String?              @db.Text()
 
   guidance              Guidance   @relation(fields: [guidance_id], references: [id], onDelete: Cascade)
   user                  Users      @relation(fields: [user_id], references: [id], onDelete: Cascade)

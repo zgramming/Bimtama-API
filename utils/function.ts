@@ -1,82 +1,102 @@
-import { existsSync } from "fs";
+import { existsSync, mkdirSync, renameSync } from "fs";
+import path from "path";
 import { v4 as uuidv4 } from "uuid";
 
-export const mbTObytes = (mb: number) => {
-  const multiplication = 1048576;
-  return mb * multiplication;
-};
-
-/// 1. image/jpeg (jpg)
-/// 2. image/png (png)
-/// 3. image/jpg (jpg)
-/// 3. application/pdf (pdf)
-/// 4. application/vnd.openxmlformats-officedocument.wordprocessingml.document (docx)
-/// 5. application/vnd.openxmlformats-officedocument.spreadsheetml.sheet (xlsx)
-export const validationFile = ({
-  file,
-  allowedMimetype,
-  limitSizeMB,
-  onError,
-}: {
-  file: any;
-  allowedMimetype: Array<"jpg" | "png" | "jpeg" | "pdf" | "docx" | "xlsx">;
-  limitSizeMB: number;
-  onError: (message: string) => void;
-}) => {
-  if (!existsSync(file.filepath)) return onError("File tidak valid");
-  const mimetype = file.mimetype;
-  const validMimetype: Array<
+type ValidateFileType = {
+  allowedExtension: Array<
+    | ".jpg"
+    | ".jpeg"
+    | ".png"
+    | ".doc"
+    | ".docx"
+    | ".pdf"
+    | ".ppt"
+    | ".pptx"
+    | ".xls"
+    | ".xlsx"
+  >;
+  allowedMimetypes: Array<
+    | "application/msword"
+    | "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     | "image/jpeg"
     | "image/png"
-    | "image/jpg"
     | "application/pdf"
-    | "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    | "application/vnd.ms-powerpoint"
+    | "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+    | "application/vnd.ms-excel"
     | "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-  > = [];
+  >;
 
-  allowedMimetype.forEach((val) => {
-    switch (val) {
-      case "jpeg":
-        validMimetype.push("image/jpeg");
-        break;
-      case "png":
-        validMimetype.push("image/png");
-        break;
-      case "jpg":
-        validMimetype.push("image/jpg");
-        break;
-      case "pdf":
-        validMimetype.push("application/pdf");
-        break;
-      case "docx":
-        validMimetype.push(
-          "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-        );
-        break;
-      case "xlsx":
-        validMimetype.push(
-          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        );
-        break;
+  /// Mb
+  allowedSize: number;
 
-      default:
-        return;
-    }
-  });
+  /// Give name to file without extension. Example : myfile | thisismydocument
+  filename?: string;
+};
 
-  if (!validMimetype.includes(mimetype)) {
-    return onError(`File harus berupa ${allowedMimetype.join(",")}`);
-  }
+type FileValidate = {
+  filename: string;
+  size: number;
+  mimetype: string;
+};
 
-  if ((file.size as number) > mbTObytes(limitSizeMB)) {
-    return onError(
-      `File ${file.originalFilename} tidak boleh melebihi ${limitSizeMB}Mb`
-    );
-  }
-
-  return true;
+type ValidateFileResult = {
+  error?: string;
+  name?: string;
 };
 
 export const generateUUID = () => {
   return uuidv4();
+};
+
+export const validateFile = (
+  file: FileValidate,
+  { config }: { config: ValidateFileType }
+): ValidateFileResult => {
+  const defaultName = generateUUID();
+  const extension = path.extname(file.filename) as unknown as any;
+
+  if (!config.allowedExtension.includes(extension)) {
+    return {
+      error: `Extension tidak valid. Extension yang diperbolehkan ${config.allowedExtension.join(
+        ","
+      )}`,
+    };
+  }
+
+  if (!config.allowedMimetypes.includes(file.mimetype as unknown as any)) {
+    return {
+      error: `Mimetype tidak valid. Mimetype yang diperbolehkan ${config.allowedMimetypes.join(
+        ","
+      )}`,
+    };
+  }
+
+  const fileSize = file.size / (1024 * 1024);
+  if (fileSize > config.allowedSize) {
+    return {
+      error: `File terlalu besar. Ukurang yang diperbolehkan ${config.allowedSize} Mb`,
+    };
+  }
+
+  const name = config.filename
+    ? `${config.filename}${extension}`
+    : `${defaultName}${extension}`;
+
+  return { name: name };
+};
+
+export const moveFile = (
+  /// /public/images/image.jpg
+  oldPath: string,
+  newPath: string
+) => {
+  const name = path.basename(newPath);
+  const dir = path.dirname(newPath);
+
+  if (!existsSync(dir)) {
+    mkdirSync(dir, { recursive: true });
+  }
+
+  renameSync(oldPath, newPath);
 };

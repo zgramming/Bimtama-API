@@ -1,4 +1,6 @@
+import { Context, DefaultState } from "koa";
 import Router from "koa-router";
+import path from "path";
 
 import { AdminOutlineController } from "./routes/admin/outline";
 import { AdminOutlineComponentController } from "./routes/admin/outline_component";
@@ -21,8 +23,10 @@ import { SettingModulController } from "./routes/setting/modul";
 import { SettingParameterController } from "./routes/setting/parameter";
 import { SettingUserController } from "./routes/setting/user";
 import { SettingUserGroupController } from "./routes/setting/user_group";
+import { generateUUID } from "./utils/function";
+import koaBody from "koa-body";
 
-const router = new Router();
+const router = new Router<DefaultState, Context>();
 
 //! Authentication
 router.post(`/login`, AuthController.login);
@@ -181,9 +185,35 @@ router.get(
 router.get(`/mahasiswa/profile/:user_id`, MahasiswaProfileController.getById);
 router.put(`/mahasiswa/profile`, MahasiswaProfileController.update);
 
+router.get(`/mahasiswa/guidance/:user_id`, MahasiswaGuidanceController.get);
 router.get(
   `/mahasiswa/guidance/outline/:user_id`,
   MahasiswaGuidanceController.getOutline
+);
+router.post(
+  `/mahasiswa/guidance/submission/proposal-title`,
+  MahasiswaGuidanceController.upsertProposalTitle
+);
+router.post(
+  `/mahasiswa/guidance/submission/bab1`,
+  koaBody({ multipart: true }),
+  MahasiswaGuidanceController.submissionBab1
+);
+router.post(
+  `/mahasiswa/guidance/submission/bab2`,
+  MahasiswaGuidanceController.submissionBab2
+);
+router.post(
+  `/mahasiswa/guidance/submission/bab3`,
+  MahasiswaGuidanceController.submissionBab3
+);
+router.post(
+  `/mahasiswa/guidance/submission/bab4`,
+  MahasiswaGuidanceController.submissionBab4
+);
+router.post(
+  `/mahasiswa/guidance/submission/bab5`,
+  MahasiswaGuidanceController.submissionBab5
 );
 
 export default router;

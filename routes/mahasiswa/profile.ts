@@ -1,15 +1,16 @@
 import Validator from "fastest-validator";
-import { Next, ParameterizedContext } from "koa";
+import { Next } from "koa";
 
 import { PrismaClient } from "@prisma/client";
 
 import { ERROR_TYPE_VALIDATION } from "../../utils/constant";
+import { KoaContext } from "../../utils/types";
 
 const prisma = new PrismaClient();
 const validator = new Validator();
 
 export class MahasiswaProfileController {
-  public static async getById(ctx: ParameterizedContext, next: Next) {
+  public static async getById(ctx: KoaContext, next: Next) {
     const { user_id } = ctx.params;
     const result = await prisma.users.findUnique({
       where: {
@@ -31,7 +32,7 @@ export class MahasiswaProfileController {
     });
   }
 
-  public static async update(ctx: ParameterizedContext, next: Next) {
+  public static async update(ctx: KoaContext, next: Next) {
     try {
       const { user_id, name, phone, image } = ctx.request.body;
 

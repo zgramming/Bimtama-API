@@ -1,18 +1,20 @@
 import { Next, ParameterizedContext } from "koa";
 
 import { PrismaClient } from "@prisma/client";
+import { IRouterParamContext } from "koa-router";
+import { KoaContext } from "../../utils/types";
 
 const prisma = new PrismaClient();
 
 export class AdminOutlineComponentController {
-  public static async get(ctx: ParameterizedContext, next: Next) {
+  public static async get(ctx: KoaContext, next: Next) {
     const result = await prisma.outlineComponent.findMany();
     return (ctx.body = {
       success: true,
       data: result,
     });
   }
-  public static async getById(ctx: ParameterizedContext, next: Next) {
+  public static async getById(ctx: KoaContext, next: Next) {
     const { id } = ctx.params;
     if (!id) {
       ctx.status = 400;
@@ -31,7 +33,7 @@ export class AdminOutlineComponentController {
       data: result,
     });
   }
-  public static async getByOutlineId(ctx: ParameterizedContext, next: Next) {
+  public static async getByOutlineId(ctx: KoaContext, next: Next) {
     const { outline_id } = ctx.params;
     if (!outline_id) {
       ctx.status = 400;
@@ -41,7 +43,7 @@ export class AdminOutlineComponentController {
       });
     }
     const result = await prisma.outlineComponent.findMany({
-      where: { outline_id: outline_id },
+      where: { outline_id: +outline_id },
     });
 
     return (ctx.body = {

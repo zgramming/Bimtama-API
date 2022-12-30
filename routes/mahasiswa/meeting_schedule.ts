@@ -1,14 +1,13 @@
-import Validator from "fastest-validator";
-import { Next, ParameterizedContext } from "koa";
+import { Next } from "koa";
 
-import { PrismaClient } from "@prisma/client";
-
+import { MeetingScheduleType, PrismaClient } from "@prisma/client";
 import { PrismaClientValidationError } from "@prisma/client/runtime";
+import { KoaContext } from "../../utils/types";
 
 const prisma = new PrismaClient();
 
 export class MahasiswaMeetingScheduleController {
-  public static async getByUserId(ctx: ParameterizedContext, next: Next) {
+  public static async getByUserId(ctx: KoaContext, next: Next) {
     const { user_id } = ctx.params;
 
     const groupMember = await prisma.groupMember.findFirst({
@@ -39,10 +38,7 @@ export class MahasiswaMeetingScheduleController {
     });
   }
 
-  public static async getByUserIdAndType(
-    ctx: ParameterizedContext,
-    next: Next
-  ) {
+  public static async getByUserIdAndType(ctx: KoaContext, next: Next) {
     try {
       const { user_id, type } = ctx.params;
 
@@ -70,9 +66,7 @@ export class MahasiswaMeetingScheduleController {
         },
         where: {
           group_id: +groupMember.group_id,
-          type: {
-            equals: type,
-          },
+          type: type as unknown as MeetingScheduleType,
         },
       });
 

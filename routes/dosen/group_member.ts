@@ -4,12 +4,14 @@ import { Next, ParameterizedContext } from "koa";
 import { PrismaClient } from "@prisma/client";
 
 import { ERROR_TYPE_VALIDATION } from "../../utils/constant";
+import { IRouterParamContext } from "koa-router";
+import { KoaContext } from "../../utils/types";
 
 const prisma = new PrismaClient();
 const validator = new Validator();
 
 export class DosenGroupMemberController {
-  public static async get(ctx: ParameterizedContext, next: Next) {
+  public static async get(ctx: KoaContext, next: Next) {
     const result = await prisma.groupMember.findMany({
       include: { user: true, group: true },
     });
@@ -20,7 +22,7 @@ export class DosenGroupMemberController {
     });
   }
 
-  public static async getById(ctx: ParameterizedContext, next: Next) {
+  public static async getById(ctx: KoaContext, next: Next) {
     const { id } = ctx.params;
     const result = await prisma.groupMember.findUnique({
       include: { user: true, group: true },
@@ -33,7 +35,7 @@ export class DosenGroupMemberController {
     });
   }
 
-  public static async getByGroupId(ctx: ParameterizedContext, next: Next) {
+  public static async getByGroupId(ctx: KoaContext, next: Next) {
     const { group_id } = ctx.params;
     const result = await prisma.groupMember.findMany({
       include: { user: true, group: true },
@@ -46,7 +48,7 @@ export class DosenGroupMemberController {
     });
   }
 
-  public static async getByGroupCode(ctx: ParameterizedContext, next: Next) {
+  public static async getByGroupCode(ctx: KoaContext, next: Next) {
     const { group_code } = ctx.params;
     const result = await prisma.groupMember.findMany({
       include: { user: true, group: true },
@@ -60,7 +62,7 @@ export class DosenGroupMemberController {
     });
   }
 
-  public static async join(ctx: ParameterizedContext, next: Next) {
+  public static async join(ctx: KoaContext, next: Next) {
     try {
       const { user_id, group_code } = ctx.request.body;
 

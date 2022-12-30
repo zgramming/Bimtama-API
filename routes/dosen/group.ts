@@ -1,15 +1,16 @@
 import Validator from "fastest-validator";
-import { Next, ParameterizedContext } from "koa";
+import { Next } from "koa";
 
 import { PrismaClient } from "@prisma/client";
 
 import { ERROR_TYPE_VALIDATION } from "../../utils/constant";
+import { KoaContext } from "../../utils/types";
 
 const prisma = new PrismaClient();
 const validator = new Validator();
 
 export class DosenGroupController {
-  public static async get(ctx: ParameterizedContext, next: Next) {
+  public static async get(ctx: KoaContext, next: Next) {
     const result = await prisma.group.findMany();
     return (ctx.body = {
       success: true,
@@ -17,9 +18,9 @@ export class DosenGroupController {
     });
   }
 
-  public static async getById(ctx: ParameterizedContext, next: Next) {
+  public static async getById(ctx: KoaContext, next: Next) {
     const { id } = ctx.params;
-    
+
     const result = await prisma.group.findUnique({
       where: { id: +id },
       include: { group_member: true },
@@ -31,7 +32,7 @@ export class DosenGroupController {
     });
   }
 
-  public static async getByCode(ctx: ParameterizedContext, next: Next) {
+  public static async getByCode(ctx: KoaContext, next: Next) {
     const { code } = ctx.params;
     const result = await prisma.group.findUnique({ where: { code: code } });
     return (ctx.body = {
@@ -40,7 +41,7 @@ export class DosenGroupController {
     });
   }
 
-  public static async getActiveGroup(ctx: ParameterizedContext, next: Next) {
+  public static async getActiveGroup(ctx: KoaContext, next: Next) {
     const { user_id } = ctx.params;
     const result = await prisma.lectureGroupActive.findUnique({
       where: { user_id: +user_id },
@@ -53,7 +54,7 @@ export class DosenGroupController {
     });
   }
 
-  public static async create(ctx: ParameterizedContext, next: Next) {
+  public static async create(ctx: KoaContext, next: Next) {
     try {
       const { name, code, description, created_by } = ctx.request.body;
 
@@ -136,7 +137,7 @@ export class DosenGroupController {
     }
   }
 
-  public static async update(ctx: ParameterizedContext, next: Next) {
+  public static async update(ctx: KoaContext, next: Next) {
     try {
       const { id } = ctx.params;
       const { name, code, description } = ctx.request.body;
@@ -186,7 +187,7 @@ export class DosenGroupController {
     }
   }
 
-  public static async delete(ctx: ParameterizedContext, next: Next) {
+  public static async delete(ctx: KoaContext, next: Next) {
     try {
       const { id } = ctx.params;
       const del = await prisma.group.delete({ where: { id: +id } });

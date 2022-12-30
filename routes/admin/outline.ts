@@ -1,9 +1,10 @@
 import Validator from "fastest-validator";
-import { Next, ParameterizedContext } from "koa";
+import { Next } from "koa";
 
 import { PrismaClient } from "@prisma/client";
 
 import { ERROR_TYPE_VALIDATION } from "../../utils/constant";
+import { KoaContext } from "../../utils/types";
 
 const prisma = new PrismaClient();
 const validator = new Validator();
@@ -16,7 +17,7 @@ type OutlineComponentType = {
 };
 
 export class AdminOutlineController {
-  public static async get(ctx: ParameterizedContext, next: Next) {
+  public static async get(ctx: KoaContext, next: Next) {
     const result = await prisma.outline.findMany({
       include: {
         master_outline: true,
@@ -33,7 +34,7 @@ export class AdminOutlineController {
     });
   }
 
-  public static async getById(ctx: ParameterizedContext, next: Next) {
+  public static async getById(ctx: KoaContext, next: Next) {
     try {
       const { id } = ctx.params;
       const result = await prisma.outline.findFirst({
@@ -55,7 +56,7 @@ export class AdminOutlineController {
     }
   }
 
-  public static async create(ctx: ParameterizedContext, next: Next) {
+  public static async create(ctx: KoaContext, next: Next) {
     try {
       const { mst_outline_id, title, description, mst_outline_component } =
         ctx.request.body;
@@ -126,7 +127,7 @@ export class AdminOutlineController {
     }
   }
 
-  public static async update(ctx: ParameterizedContext, next: Next) {
+  public static async update(ctx: KoaContext, next: Next) {
     try {
       const { id } = ctx.params;
       const { mst_outline_id, title, description, mst_outline_component } =
@@ -207,7 +208,7 @@ export class AdminOutlineController {
     }
   }
 
-  public static async delete(ctx: ParameterizedContext, next: Next) {
+  public static async delete(ctx: KoaContext, next: Next) {
     try {
       const { id } = ctx.params;
 
@@ -217,7 +218,7 @@ export class AdminOutlineController {
       }
 
       const deleteOutline = await prisma.outline.delete({
-        where: { id: id },
+        where: { id: +id },
       });
 
       return (ctx.body = {

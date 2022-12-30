@@ -1,10 +1,11 @@
-import { Next, ParameterizedContext } from "koa";
+import { Next } from "koa";
 
 import { CommonStatus, PrismaClient } from "@prisma/client";
+import { KoaContext } from "../../utils/types";
 
 const prisma = new PrismaClient();
 export class SettingMasterDataController {
-  public static async get(ctx: ParameterizedContext, next: Next) {
+  public static async get(ctx: KoaContext, next: Next) {
     const {
       master_category_id,
       master_category_code,
@@ -47,10 +48,7 @@ export class SettingMasterDataController {
     return (ctx.body = { success: true, data: result });
   }
 
-  public static async getByCategoryCodeCategory(
-    ctx: ParameterizedContext,
-    next: Next
-  ) {
+  public static async getByCategoryCodeCategory(ctx: KoaContext, next: Next) {
     try {
       const { category_code } = ctx.params;
       const result = await prisma.masterData.findMany({
@@ -74,7 +72,7 @@ export class SettingMasterDataController {
     }
   }
 
-  public static async create(ctx: ParameterizedContext, next: Next) {
+  public static async create(ctx: KoaContext, next: Next) {
     try {
       const {
         master_data_id,
@@ -150,7 +148,7 @@ export class SettingMasterDataController {
     }
   }
 
-  public static async update(ctx: ParameterizedContext, next: Next) {
+  public static async update(ctx: KoaContext, next: Next) {
     try {
       const { id = 0 }: { id?: number } = ctx.params;
       const {
@@ -220,7 +218,7 @@ export class SettingMasterDataController {
     }
   }
 
-  public static async delete(ctx: ParameterizedContext, next: Next) {
+  public static async delete(ctx: KoaContext, next: Next) {
     try {
       const { id = 0 }: { id?: number } = ctx.params;
       if (id == 0) ctx.throw("ID is required", 400);

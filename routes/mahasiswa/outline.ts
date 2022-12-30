@@ -1,15 +1,16 @@
-import Validator from 'fastest-validator';
-import { Next, ParameterizedContext } from 'koa';
+import Validator from "fastest-validator";
+import { Next } from "koa";
 
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from "@prisma/client";
 
-import { ERROR_TYPE_VALIDATION } from '../../utils/constant';
+import { ERROR_TYPE_VALIDATION } from "../../utils/constant";
+import { KoaContext } from "../../utils/types";
 
 const prisma = new PrismaClient();
 const validator = new Validator();
 
 export class MahasiswaOutlineController {
-  public static async get(ctx: ParameterizedContext, next: Next) {
+  public static async get(ctx: KoaContext, next: Next) {
     const result = await prisma.studentOutline.findMany({
       include: { outline: true, user: true },
     });
@@ -19,7 +20,7 @@ export class MahasiswaOutlineController {
     });
   }
 
-  public static async getById(ctx: ParameterizedContext, next: Next) {
+  public static async getById(ctx: KoaContext, next: Next) {
     const { id } = ctx.params;
     const result = await prisma.studentOutline.findUnique({
       include: { outline: true, user: true },
@@ -31,7 +32,7 @@ export class MahasiswaOutlineController {
     });
   }
 
-  public static async getByUserId(ctx: ParameterizedContext, next: Next) {
+  public static async getByUserId(ctx: KoaContext, next: Next) {
     const { user_id } = ctx.params;
     const result = await prisma.studentOutline.findUnique({
       include: { outline: true, user: true },
@@ -43,7 +44,7 @@ export class MahasiswaOutlineController {
     });
   }
 
-  public static async upsert(ctx: ParameterizedContext, next: Next) {
+  public static async upsert(ctx: KoaContext, next: Next) {
     try {
       const { user_id, outline_id } = ctx.request.body;
 

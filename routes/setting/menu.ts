@@ -1,10 +1,11 @@
 import { Next, ParameterizedContext } from "koa";
 
 import { CommonStatus, PrismaClient } from "@prisma/client";
+import { KoaContext } from "../../utils/types";
 
 const prisma = new PrismaClient();
 export class SettingMenuController {
-  public static async getMenu(ctx: ParameterizedContext, next: Next) {
+  public static async getMenu(ctx: KoaContext, next: Next) {
     const {
       app_modul_id = 0,
       name = "",
@@ -46,7 +47,7 @@ export class SettingMenuController {
     return (ctx.body = { success: true, data: result });
   }
 
-  public static async createMenu(ctx: ParameterizedContext, next: Next) {
+  public static async createMenu(ctx: KoaContext, next: Next) {
     try {
       const {
         app_modul_id = 0,
@@ -100,7 +101,7 @@ export class SettingMenuController {
     }
   }
 
-  public static async updateMenu(ctx: ParameterizedContext, next: Next) {
+  public static async updateMenu(ctx: KoaContext, next: Next) {
     try {
       const { id = 0 }: { id?: number } = ctx.params;
       const {
@@ -159,7 +160,7 @@ export class SettingMenuController {
     }
   }
 
-  public static async deleteMenu(ctx: ParameterizedContext, next: Next) {
+  public static async deleteMenu(ctx: KoaContext, next: Next) {
     try {
       const { id = 0 }: { id?: number } = ctx.params;
       if (id == 0) ctx.throw("ID is required", 400);
