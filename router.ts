@@ -1,10 +1,13 @@
 import { Context, DefaultState } from "koa";
 import Router from "koa-router";
 
+import { validateJWTToken } from "./middleware/validate_jwt_token_middleware";
 import { AdminOutlineController } from "./routes/admin/outline";
 import { AdminOutlineComponentController } from "./routes/admin/outline_component";
 import { DosenGroupController } from "./routes/dosen/group";
 import { DosenGroupMemberController } from "./routes/dosen/group_member";
+import { DosenMeetingScheduleController } from "./routes/dosen/meeting_schedule";
+import { DosenProfileController } from "./routes/dosen/profile";
 import { MahasiswaGroupController } from "./routes/mahasiswa/group";
 import { MahasiswaGuidanceController } from "./routes/mahasiswa/guidance";
 import { MahasiswaMeetingScheduleController } from "./routes/mahasiswa/meeting_schedule";
@@ -22,8 +25,6 @@ import { SettingModulController } from "./routes/setting/modul";
 import { SettingParameterController } from "./routes/setting/parameter";
 import { SettingUserController } from "./routes/setting/user";
 import { SettingUserGroupController } from "./routes/setting/user_group";
-import { validateJWTToken } from "./middleware/validate_jwt_token_middleware";
-import { DosenProfileController } from "./routes/dosen/profile";
 
 const router = new Router<DefaultState, Context>();
 
@@ -187,6 +188,17 @@ router.get(
   `/dosen/group-member/by-group-code/:group_code`,
   validateJWTToken,
   DosenGroupMemberController.getByGroupCode
+);
+
+router.get(
+  `/dosen/meeting-schedule/:user_id/type/:type`,
+  validateJWTToken,
+  DosenMeetingScheduleController.getByUserIdAndType
+);
+router.post(`/dosen/meeting-schedule`, DosenMeetingScheduleController.create);
+router.put(
+  `/dosen/meeting-schedule/:id`,
+  DosenMeetingScheduleController.update
 );
 
 router.get(

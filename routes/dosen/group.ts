@@ -242,6 +242,7 @@ export class DosenGroupController {
       }
 
       const update = await prisma.lectureGroupActive.update({
+        include:{group:true},
         where: {
           user_id: +user_id,
         },
@@ -252,6 +253,7 @@ export class DosenGroupController {
 
       return (ctx.body = {
         data: update,
+        message: `Berhasil mengupdate ${update.group.name} menjadi kelompok aktif saya`,
         success: true,
       });
     } catch (e: any) {
