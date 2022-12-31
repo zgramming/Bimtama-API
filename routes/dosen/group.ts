@@ -5,6 +5,7 @@ import { PrismaClient } from "@prisma/client";
 
 import { ERROR_TYPE_VALIDATION } from "../../utils/constant";
 import { KoaContext } from "../../utils/types";
+import { HTTP_RESPONSE_CODE } from "../../utils/http_response_code";
 
 const prisma = new PrismaClient();
 const validator = new Validator();
@@ -48,9 +49,44 @@ export class DosenGroupController {
       select: { group: true },
     });
 
+    const group = result?.group;
+    if (!group) {
+      ctx.status = HTTP_RESPONSE_CODE.FORBIDDEN;
+      return (ctx.body = {
+        success: false,
+        message: "Kamu belum mempunyai kelompok",
+      });
+    }
+
     return (ctx.body = {
       success: true,
-      data: result?.group,
+      data: group,
+    });
+  }
+
+  public static async getMyActiveGroupMember(ctx: KoaContext, next: Next) {
+    const { user_id } = ctx.params;
+    const result = await prisma.lectureGroupActive.findUnique({
+      where: { user_id: +user_id },
+    });
+
+    if (!result) {
+      ctx.status = HTTP_RESPONSE_CODE.FORBIDDEN;
+      return (ctx.body = {
+        success: false,
+        message: "Kamu belum mempunyai kelompok yang aktif",
+      });
+    }
+
+    const groupMember = await prisma.groupMember.findMany({
+      include: { user: true },
+      where: { group_id: result.group_id, user_id: { not: + user_id } },
+    });
+
+    return (ctx.body = {
+      success: true,
+      message: "Berhasil mendapatkan group member",
+      data: groupMember,
     });
   }
 
@@ -242,7 +278,7 @@ export class DosenGroupController {
       }
 
       const update = await prisma.lectureGroupActive.update({
-        include:{group:true},
+        include: { group: true },
         where: {
           user_id: +user_id,
         },

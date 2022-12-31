@@ -152,6 +152,11 @@ router.get(
   DosenGroupController.getMyActiveGroup
 );
 router.get(
+  `/dosen/my-group/active/member/:user_id`,
+  validateJWTToken,
+  DosenGroupController.getMyActiveGroupMember
+);
+router.get(
   `/dosen/my-group/:user_id`,
   validateJWTToken,
   DosenGroupController.getMyGroup
@@ -196,9 +201,17 @@ router.get(
   DosenMeetingScheduleController.getByUserIdAndType
 );
 router.post(`/dosen/meeting-schedule`, DosenMeetingScheduleController.create);
+router.post(
+  `/dosen/meeting-schedule/personal`,
+  DosenMeetingScheduleController.createPersonal
+);
 router.put(
   `/dosen/meeting-schedule/:id`,
   DosenMeetingScheduleController.update
+);
+router.put(
+  `/dosen/meeting-schedule/personal/:id`,
+  DosenMeetingScheduleController.updatePersonal
 );
 
 router.get(
@@ -267,6 +280,11 @@ router.get(
   `/mahasiswa/meeting-schedule/:user_id/type/:type`,
   validateJWTToken,
   MahasiswaMeetingScheduleController.getByUserIdAndType
+);
+router.get(
+  `/mahasiswa/meeting-schedule/personal/by-meeting-schedule-id/:meeting_schedule_id`,
+  validateJWTToken,
+  MahasiswaMeetingScheduleController.getMeetingPersonalByMeetingId
 );
 
 router.get(

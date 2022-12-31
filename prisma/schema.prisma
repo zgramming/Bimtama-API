@@ -251,10 +251,10 @@ model Users {
   group_member              GroupMember[]
   group                     Group[]
   lecture_group_active      LectureGroupActive?
-  meeting_schedule_present  MeetingSchedulePresent[]
   guidance                  Guidance?
   guidance_detail           GuidanceDetail[]
   student_guidance_progress StudentGuidanceProgress[]
+  meeting_schedule_personal MeetingSchedulePersonal[]
 
   @@map("users")
 }
@@ -385,17 +385,17 @@ model MeetingSchedule {
   created_by Int?
   updated_by Int?
 
-  group                    Group                    @relation(fields: [group_id], references: [id], onDelete: Cascade)
-  meeting_schedule_present MeetingSchedulePresent[]
+  group                     Group                    @relation(fields: [group_id], references: [id], onDelete: Cascade)
+  meeting_schedule_personal MeetingSchedulePersonal?
 
   @@map("meeting_schedule")
 }
 
-model MeetingSchedulePresent {
+model MeetingSchedulePersonal {
   id                  String @id @default(uuid())
-  meeting_schedule_id Int
-  user_id             Int
+  meeting_schedule_id Int    @unique
   group_id            Int
+  user_id             Int
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
@@ -405,7 +405,7 @@ model MeetingSchedulePresent {
   meeting_schedule MeetingSchedule @relation(fields: [meeting_schedule_id], references: [id], onDelete: Cascade)
   user             Users           @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
-  @@map("meeting_schedule_present")
+  @@map("meeting_schedule_personal")
 }
 
 model Outline {
@@ -420,7 +420,7 @@ model Outline {
 
   master_outline    MasterData         @relation(fields: [mst_outline_id], references: [id], onDelete: Cascade)
   outline_component OutlineComponent[]
-  student_outline   StudentOutline?
+  student_outline   StudentOutline[]
 
   @@map("outline")
 }
@@ -464,7 +464,7 @@ model StudentOutline {
   /// One to One
   user_id Int @unique
 
-  outline_id Int      @unique
+  outline_id Int
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
   created_by Int?

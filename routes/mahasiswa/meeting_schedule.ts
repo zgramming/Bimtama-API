@@ -1,7 +1,6 @@
 import { Next } from "koa";
 
-import { MeetingScheduleType, PrismaClient } from "@prisma/client";
-import { PrismaClientValidationError } from "@prisma/client/runtime";
+import { PrismaClient } from "@prisma/client";
 import { KoaContext } from "../../utils/types";
 
 const prisma = new PrismaClient();
@@ -27,7 +26,6 @@ export class MahasiswaMeetingScheduleController {
     const result = await prisma.meetingSchedule.findMany({
       include: {
         group: true,
-        meeting_schedule_present: true,
       },
       where: { group_id: +groupMember.group_id },
     });
@@ -56,17 +54,24 @@ export class MahasiswaMeetingScheduleController {
         });
       }
 
+      const isPersonal = type == "personal";
       const result = await prisma.meetingSchedule.findMany({
         include: {
           group: true,
-          meeting_schedule_present: true,
+          meeting_schedule_personal: true,
         },
         orderBy: {
           start_date: "desc",
         },
         where: {
           group_id: +groupMember.group_id,
-          type: type as unknown as MeetingScheduleType,
+          type: type,
+          /// Jika personal, hanya tampilkan [meeting_schedule_personal] user_id == ${user_id}
+          ...(isPersonal && {
+            meeting_schedule_personal: {
+              user_id: +user_id,
+            },
+          }),
         },
       });
 
@@ -78,14 +83,25 @@ export class MahasiswaMeetingScheduleController {
       ctx.status = 500;
       let message = error?.message || "Unknown Error Message";
 
-      if (error instanceof PrismaClientValidationError) {
-        ctx.status = 400;
-      }
-
       return (ctx.body = {
         success: false,
         message: message,
       });
     }
+  }
+
+  public static async getMeetingPersonalByMeetingId(
+    ctx: KoaContext,
+    next: Next
+  ) {
+    const { meeting_schedule_id } = ctx.params;
+    const result = await prisma.meetingSchedulePersonal.findUnique({
+      include: { user: true, meeting_schedule: true },
+      where: { meeting_schedule_id: +meeting_schedule_id },
+    });
+    return (ctx.body = {
+      success: true,
+      data: result,
+    });
   }
 }
