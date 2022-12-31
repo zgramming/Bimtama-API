@@ -278,9 +278,9 @@ const MenuSeeder = async () => {
       {
         app_menu_id_parent: dosenSettingParent?.id,
         app_modul_id: modulDosen?.id ?? 0,
-        code: "DOSEN_SETTING_GROUP",
-        name: "Kelompok",
-        route: "/dosen/setting/group",
+        code: "DOSEN_SETTING_MY_GROUP",
+        name: "Kelompok Saya",
+        route: "/dosen/setting/my_group",
         order: 2,
       },
 

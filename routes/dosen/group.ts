@@ -41,7 +41,7 @@ export class DosenGroupController {
     });
   }
 
-  public static async getActiveGroup(ctx: KoaContext, next: Next) {
+  public static async getMyActiveGroup(ctx: KoaContext, next: Next) {
     const { user_id } = ctx.params;
     const result = await prisma.lectureGroupActive.findUnique({
       where: { user_id: +user_id },
@@ -51,6 +51,19 @@ export class DosenGroupController {
     return (ctx.body = {
       success: true,
       data: result?.group,
+    });
+  }
+
+  public static async getMyGroup(ctx: KoaContext, next: Next) {
+    const { user_id } = ctx.params;
+    const result = await prisma.group.findMany({
+      where: {
+        created_by: +user_id,
+      },
+    });
+    return (ctx.body = {
+      success: true,
+      data: result,
     });
   }
 
@@ -193,6 +206,52 @@ export class DosenGroupController {
       const del = await prisma.group.delete({ where: { id: +id } });
       return (ctx.body = {
         data: del,
+        success: true,
+      });
+    } catch (e: any) {
+      ctx.status = 500;
+      const message = e?.message || "Unknown Error Message";
+      return (ctx.body = {
+        success: false,
+        message: message,
+      });
+    }
+  }
+
+  public static async updateActiveGroup(ctx: KoaContext, next: Next) {
+    try {
+      const { user_id } = ctx.params;
+      const { group_id } = ctx.request.body;
+
+      const createSchema = validator.compile({
+        user_id: { type: "number" },
+        group_id: { type: "number" },
+      });
+      const validate = await createSchema({
+        group_id: +group_id,
+        user_id: +user_id,
+      });
+
+      if (validate !== true) {
+        ctx.status = 400;
+        return (ctx.body = {
+          success: false,
+          type: ERROR_TYPE_VALIDATION,
+          message: validate,
+        });
+      }
+
+      const update = await prisma.lectureGroupActive.update({
+        where: {
+          user_id: +user_id,
+        },
+        data: {
+          group_id: +group_id,
+        },
+      });
+
+      return (ctx.body = {
+        data: update,
         success: true,
       });
     } catch (e: any) {

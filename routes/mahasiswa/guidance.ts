@@ -107,7 +107,7 @@ export class MahasiswaGuidanceController {
       });
 
       if (validate !== true) {
-        ctx.status = 400;
+        ctx.status = HTTP_RESPONSE_CODE.BAD_REQUEST;
         return (ctx.body = {
           success: false,
           type: ERROR_TYPE_VALIDATION,
@@ -191,7 +191,7 @@ export class MahasiswaGuidanceController {
 
   public static async submissionTitle(ctx: KoaContext, next: Next) {
     try {
-      const { user_id, title, description, file } = ctx.request.body;
+      const { user_id, title, description } = ctx.request.body;
 
       const createSchema = validator.compile({
         user_id: { type: "number" },
@@ -203,7 +203,7 @@ export class MahasiswaGuidanceController {
       });
 
       if (validate !== true) {
-        ctx.status = 400;
+        ctx.status = HTTP_RESPONSE_CODE.BAD_REQUEST;
         return (ctx.body = {
           success: false,
           type: ERROR_TYPE_VALIDATION,
@@ -236,20 +236,27 @@ export class MahasiswaGuidanceController {
         });
       }
 
-      const submissionProgress = await prisma.guidanceDetail.findFirst({
-        where: {
-          status: "progress",
-          user_id: +user_id,
-          mst_outline_component_id: mstOutlineComponent.id,
-        },
-      });
+      const submissionProgressOrApproved =
+        await prisma.guidanceDetail.findFirst({
+          where: {
+            status: {
+              in: ["approved", "progress"],
+            },
+            user_id: +user_id,
+            mst_outline_component_id: mstOutlineComponent.id,
+          },
+        });
 
-      if (submissionProgress) {
+      if (submissionProgressOrApproved) {
         ctx.status = HTTP_RESPONSE_CODE.FORBIDDEN;
+        const message =
+          submissionProgressOrApproved.status == "approved"
+            ? "Submission kamu sudah diapproved"
+            : "Kamu masih mempunyai submission yang masih progress. Mohon tunggu dosen pembimbing untuk memeriksa submission kamu.";
+
         return (ctx.body = {
           success: false,
-          message:
-            "Kamu masih mempunyai submission yang masih progress. Mohon tunggu dosen pembimbing untuk memeriksa submission kamu.",
+          message: message,
         });
       }
 
@@ -297,7 +304,7 @@ export class MahasiswaGuidanceController {
       });
 
       if (validate !== true) {
-        ctx.status = 400;
+        ctx.status = HTTP_RESPONSE_CODE.BAD_REQUEST;
         return (ctx.body = {
           success: false,
           type: ERROR_TYPE_VALIDATION,
@@ -305,16 +312,16 @@ export class MahasiswaGuidanceController {
         });
       }
 
-      const codeMstOutlineComponentBab1 = `OUTLINE_COMPONENT_BAB1`;
+      const codeMstOutlineComponentBAB1 = `OUTLINE_COMPONENT_BAB1`;
       const mstOutlineComponent = await prisma.masterData.findUnique({
-        where: { code: codeMstOutlineComponentBab1 },
+        where: { code: codeMstOutlineComponentBAB1 },
       });
 
       if (!mstOutlineComponent) {
         ctx.status = HTTP_RESPONSE_CODE.NOT_FOUND;
         return (ctx.body = {
           success: false,
-          message: `Outline Component dengan kode ${codeMstOutlineComponentBab1} tidak ditemukan, pastikan master data tersedia.`,
+          message: `Outline Component dengan kode ${codeMstOutlineComponentBAB1} tidak ditemukan, pastikan master data tersedia.`,
         });
       }
 
@@ -330,19 +337,35 @@ export class MahasiswaGuidanceController {
         });
       }
 
-      const data = {
-        guidance_id: guidance.id,
-        user_id,
-        group_id: guidance.group_id,
-        mst_outline_component_id: mstOutlineComponent.id,
-        title,
-        description,
-      };
+      const submissionProgressOrApproved =
+        await prisma.guidanceDetail.findFirst({
+          where: {
+            status: {
+              in: ["approved", "progress"],
+            },
+            user_id: +user_id,
+            mst_outline_component_id: mstOutlineComponent.id,
+          },
+        });
+
+      if (submissionProgressOrApproved) {
+        ctx.status = HTTP_RESPONSE_CODE.FORBIDDEN;
+        const message =
+          submissionProgressOrApproved.status == "approved"
+            ? "Submission kamu sudah diapproved"
+            : "Kamu masih mempunyai submission yang masih progress. Mohon tunggu dosen pembimbing untuk memeriksa submission kamu.";
+
+        return (ctx.body = {
+          success: false,
+          message: message,
+        });
+      }
 
       /// Start File Validation
-      let moveFileConfig = {
+      const moveFileConfig = {
         oldPath: "",
         newPath: "",
+        filename: "",
       };
       if (files.file) {
         console.log({ file: files.file });
@@ -362,7 +385,7 @@ export class MahasiswaGuidanceController {
         );
 
         if (error) {
-          ctx.status = 400;
+          ctx.status = HTTP_RESPONSE_CODE.BAD_REQUEST;
           return (ctx.body = {
             success: false,
             message: error,
@@ -370,11 +393,20 @@ export class MahasiswaGuidanceController {
         }
 
         /// Setup oldpath & newpath file for move file later
-        moveFileConfig = {
-          oldPath: filepath,
-          newPath: `${basePublicFileDir}/${filename}`,
-        };
+        moveFileConfig.oldPath = filepath;
+        moveFileConfig.newPath = `${basePublicFileDir}/${filename}`;
+        moveFileConfig.filename = filename!;
       }
+
+      const data = {
+        guidance_id: guidance.id,
+        user_id,
+        group_id: guidance.group_id,
+        mst_outline_component_id: mstOutlineComponent.id,
+        title,
+        description,
+        file: moveFileConfig.filename ? moveFileConfig.filename : null,
+      };
 
       const create = await prisma.guidanceDetail.create({
         data: data,

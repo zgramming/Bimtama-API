@@ -9,8 +9,7 @@ import { KoaContext } from "../../utils/types";
 const prisma = new PrismaClient();
 const validator = new Validator();
 
-export class MahasiswaProfileController {
-
+export class DosenProfileController {
   public static async getById(ctx: KoaContext, next: Next) {
     const { user_id } = ctx.params;
     const result = await prisma.users.findUnique({
@@ -32,7 +31,6 @@ export class MahasiswaProfileController {
       data: result,
     });
   }
-
   public static async update(ctx: KoaContext, next: Next) {
     try {
       const { user_id, name, phone, image } = ctx.request.body;

@@ -23,6 +23,7 @@ import { SettingParameterController } from "./routes/setting/parameter";
 import { SettingUserController } from "./routes/setting/user";
 import { SettingUserGroupController } from "./routes/setting/user_group";
 import { validateJWTToken } from "./middleware/validate_jwt_token_middleware";
+import { DosenProfileController } from "./routes/dosen/profile";
 
 const router = new Router<DefaultState, Context>();
 
@@ -144,6 +145,16 @@ router.get(
 
 //! Dosen
 
+router.get(
+  `/dosen/my-group/active/:user_id`,
+  validateJWTToken,
+  DosenGroupController.getMyActiveGroup
+);
+router.get(
+  `/dosen/my-group/:user_id`,
+  validateJWTToken,
+  DosenGroupController.getMyGroup
+);
 router.get(`/dosen/group`, validateJWTToken, DosenGroupController.get);
 router.get(`/dosen/group/:id`, validateJWTToken, DosenGroupController.getById);
 router.get(
@@ -151,15 +162,15 @@ router.get(
   validateJWTToken,
   DosenGroupController.getByCode
 );
+
 router.post(`/dosen/group`, validateJWTToken, DosenGroupController.create);
 router.put(`/dosen/group/:id`, validateJWTToken, DosenGroupController.update);
-router.del(`/dosen/group/:id`, validateJWTToken, DosenGroupController.delete);
-
-router.get(
-  `/dosen/active-group/:user_id`,
+router.put(
+  `/dosen/my-group/:user_id`,
   validateJWTToken,
-  DosenGroupController.getActiveGroup
+  DosenGroupController.updateActiveGroup
 );
+router.del(`/dosen/group/:id`, validateJWTToken, DosenGroupController.delete);
 
 router.get(`/dosen/group-member`, DosenGroupMemberController.get);
 router.get(
@@ -177,6 +188,20 @@ router.get(
   validateJWTToken,
   DosenGroupMemberController.getByGroupCode
 );
+
+router.get(
+  `/dosen/profile/:user_id`,
+  validateJWTToken,
+  DosenProfileController.getById
+);
+router.put(`/dosen/profile`, validateJWTToken, DosenProfileController.update);
+
+router.post(`/dosen/guidance/submission/proposal-title`, validateJWTToken);
+router.post(`/dosen/guidance/submission/bab1`, validateJWTToken);
+router.post(`/dosen/guidance/submission/bab2`, validateJWTToken);
+router.post(`/dosen/guidance/submission/bab3`, validateJWTToken);
+router.post(`/dosen/guidance/submission/bab4`, validateJWTToken);
+router.post(`/dosen/guidance/submission/bab5`, validateJWTToken);
 
 //! Mahasiswa
 router.get(
