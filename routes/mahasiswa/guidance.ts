@@ -1,12 +1,17 @@
 import Validator from "fastest-validator";
+import formidable from "formidable";
 import { Next } from "koa";
 
 import { PrismaClient } from "@prisma/client";
 
 import { basePublicFileDir, ERROR_TYPE_VALIDATION } from "../../utils/constant";
-import { KoaContext } from "../../utils/types";
-import { moveFile, validateFile } from "../../utils/function";
+import {
+  moveFile,
+  nextOutlineStudent,
+  validateFile,
+} from "../../utils/function";
 import { HTTP_RESPONSE_CODE } from "../../utils/http_response_code";
+import { KoaContext } from "../../utils/types";
 
 const prisma = new PrismaClient();
 const validator = new Validator();
@@ -59,6 +64,19 @@ export class MahasiswaGuidanceController {
     });
   }
 
+  public static async getGuidanceProgress(ctx: KoaContext, next: Next) {
+    const { user_id } = ctx.params;
+    const result = await prisma.studentGuidanceProgress.findMany({
+      where: { user_id: +user_id },
+    });
+
+    return (ctx.body = {
+      success: false,
+      message: "Berhasil mendapatkan progress bimbingan",
+      data: result,
+    });
+  }
+
   public static async getGuidanceDetail(ctx: KoaContext, next: Next) {
     try {
       const { user_id, codeMasterOutlineComponent } = ctx.params;
@@ -76,7 +94,10 @@ export class MahasiswaGuidanceController {
 
       const guidanceDetail = await prisma.guidanceDetail.findMany({
         orderBy: { created_at: "desc" },
-        where: { user_id: +user_id },
+        where: {
+          user_id: +user_id,
+          mst_outline_component_id: mstOutlineComponent.id,
+        },
       });
 
       return (ctx.body = {
@@ -165,18 +186,44 @@ export class MahasiswaGuidanceController {
           outlineComponentFirst.mst_outline_component_id,
       };
 
-      const upsert = await prisma.guidance.upsert({
-        where: {
-          user_id: +user_id,
-        },
-        create: data,
-        update: data,
+      const transaction = await prisma.$transaction(async () => {
+        const upsert = await prisma.guidance.upsert({
+          where: {
+            user_id: +user_id,
+          },
+          create: data,
+          update: data,
+        });
+
+        const nextOutline = await nextOutlineStudent(user_id);
+        if (nextOutline) {
+          const dataUpsert = {
+            guidance_id: upsert.id,
+            mst_outline_component_id: nextOutline.mst_outline_component_id,
+            user_id: user_id,
+          };
+
+          const updateStudentGuidanceProgress =
+            await prisma.studentGuidanceProgress.upsert({
+              where: {
+                user_id_mst_outline_component_id: {
+                  mst_outline_component_id:
+                    nextOutline.mst_outline_component_id,
+                  user_id: user_id,
+                },
+              },
+              create: dataUpsert,
+              update: dataUpsert,
+            });
+        }
+
+        return { upsert };
       });
 
       return (ctx.body = {
         success: true,
         message: "Berhasil memulai bimbingan",
-        data: upsert,
+        data: transaction,
       });
     } catch (error: any) {
       ctx.status = HTTP_RESPONSE_CODE.INTERNAL_SERVER_ERROR;
@@ -189,17 +236,21 @@ export class MahasiswaGuidanceController {
     }
   }
 
-  public static async submissionTitle(ctx: KoaContext, next: Next) {
+  public static async submission(ctx: KoaContext, next: Next) {
     try {
-      const { user_id, title, description } = ctx.request.body;
+      const { user_id, title, description, code_master_outline_component } =
+        ctx.request.body;
+      const files = ctx.request.files;
 
       const createSchema = validator.compile({
         user_id: { type: "number" },
         title: { type: "string" },
+        code_master_outline_component: { type: "string" },
       });
       const validate = await createSchema({
         title,
-        user_id,
+        user_id: +user_id,
+        code_master_outline_component,
       });
 
       if (validate !== true) {
@@ -211,16 +262,15 @@ export class MahasiswaGuidanceController {
         });
       }
 
-      const codeMstOutlineComponentJudul = `OUTLINE_COMPONENT_JUDUL`;
       const mstOutlineComponent = await prisma.masterData.findUnique({
-        where: { code: codeMstOutlineComponentJudul },
+        where: { code: code_master_outline_component },
       });
 
       if (!mstOutlineComponent) {
         ctx.status = HTTP_RESPONSE_CODE.NOT_FOUND;
         return (ctx.body = {
           success: false,
-          message: `Outline Component dengan kode ${codeMstOutlineComponentJudul} tidak ditemukan, pastikan master data tersedia.`,
+          message: `Outline Component dengan kode ${code_master_outline_component} tidak ditemukan, pastikan master data tersedia.`,
         });
       }
 
@@ -262,127 +312,27 @@ export class MahasiswaGuidanceController {
 
       const data = {
         guidance_id: guidance.id,
-        user_id,
+        user_id: +user_id,
         group_id: guidance.group_id,
         mst_outline_component_id: mstOutlineComponent.id,
         title,
         description,
+        file: "",
       };
 
-      const create = await prisma.guidanceDetail.create({
-        data: data,
-      });
-
-      return (ctx.body = {
-        success: true,
-        data: create,
-        message:
-          "Berhasil menyimpan Proposal Judul, mohon tunggu dosen pembimbing untuk memeriksa pengajuan kamu.",
-      });
-    } catch (error: any) {
-      ctx.status = HTTP_RESPONSE_CODE.INTERNAL_SERVER_ERROR;
-      const message = error?.message || "Unknown Error Message";
-      return (ctx.body = {
-        success: false,
-        message: message,
-      });
-    }
-  }
-
-  public static async submissionBab1(ctx: KoaContext, next: Next) {
-    try {
-      const { user_id, title, description } = ctx.request.body;
-      const files = ctx.request.files as any;
-
-      const createSchema = validator.compile({
-        user_id: { type: "number" },
-        title: { type: "string" },
-      });
-      const validate = await createSchema({
-        title,
-        user_id,
-      });
-
-      if (validate !== true) {
-        ctx.status = HTTP_RESPONSE_CODE.BAD_REQUEST;
-        return (ctx.body = {
-          success: false,
-          type: ERROR_TYPE_VALIDATION,
-          message: validate,
-        });
-      }
-
-      const codeMstOutlineComponentBAB1 = `OUTLINE_COMPONENT_BAB1`;
-      const mstOutlineComponent = await prisma.masterData.findUnique({
-        where: { code: codeMstOutlineComponentBAB1 },
-      });
-
-      if (!mstOutlineComponent) {
-        ctx.status = HTTP_RESPONSE_CODE.NOT_FOUND;
-        return (ctx.body = {
-          success: false,
-          message: `Outline Component dengan kode ${codeMstOutlineComponentBAB1} tidak ditemukan, pastikan master data tersedia.`,
-        });
-      }
-
-      const guidance = await prisma.guidance.findUnique({
-        where: { user_id: +user_id },
-      });
-
-      if (!guidance) {
-        ctx.status = HTTP_RESPONSE_CODE.NOT_FOUND;
-        return (ctx.body = {
-          success: false,
-          message: "Kamu belum memulai bimbingan",
-        });
-      }
-
-      const submissionProgressOrApproved =
-        await prisma.guidanceDetail.findFirst({
-          where: {
-            status: {
-              in: ["approved", "progress"],
-            },
-            user_id: +user_id,
-            mst_outline_component_id: mstOutlineComponent.id,
-          },
-        });
-
-      if (submissionProgressOrApproved) {
-        ctx.status = HTTP_RESPONSE_CODE.FORBIDDEN;
-        const message =
-          submissionProgressOrApproved.status == "approved"
-            ? "Submission kamu sudah diapproved"
-            : "Kamu masih mempunyai submission yang masih progress. Mohon tunggu dosen pembimbing untuk memeriksa submission kamu.";
-
-        return (ctx.body = {
-          success: false,
-          message: message,
-        });
-      }
-
-      /// Start File Validation
       const moveFileConfig = {
         oldPath: "",
         newPath: "",
-        filename: "",
       };
-      if (files.file) {
-        console.log({ file: files.file });
-
-        const { size, filepath, originalFilename, mimetype, mtime } =
-          files.file;
-
-        const { error, name: filename } = validateFile(
-          { filename: originalFilename, mimetype, size },
-          {
-            config: {
-              allowedExtension: [".doc", ".docx", ".pdf"],
-              allowedMimetypes: ["application/msword", "application/pdf"],
-              allowedSize: 2,
-            },
-          }
-        );
+      if (files?.file) {
+        const file = files.file as formidable.File;
+        const { error, name } = validateFile(file, {
+          config: {
+            allowedExtension: [".doc", ".docx", ".pdf"],
+            allowedMimetypes: ["application/msword", "application/pdf"],
+            allowedSize: 2,
+          },
+        });
 
         if (error) {
           ctx.status = HTTP_RESPONSE_CODE.BAD_REQUEST;
@@ -392,28 +342,18 @@ export class MahasiswaGuidanceController {
           });
         }
 
-        /// Setup oldpath & newpath file for move file later
-        moveFileConfig.oldPath = filepath;
-        moveFileConfig.newPath = `${basePublicFileDir}/${filename}`;
-        moveFileConfig.filename = filename!;
+        data.file = `${name}`;
+        moveFileConfig.oldPath = file.filepath;
+        moveFileConfig.newPath = `${basePublicFileDir}/${name}`;
       }
 
-      const data = {
-        guidance_id: guidance.id,
-        user_id,
-        group_id: guidance.group_id,
-        mst_outline_component_id: mstOutlineComponent.id,
-        title,
-        description,
-        file: moveFileConfig.filename ? moveFileConfig.filename : null,
-      };
-
       const create = await prisma.guidanceDetail.create({
-        data: data,
+        data: { ...data },
       });
 
-      /// Move file when all process success
-      moveFile(moveFileConfig.oldPath, moveFileConfig.newPath);
+      if (moveFileConfig.newPath) {
+        moveFile(moveFileConfig.oldPath, moveFileConfig.newPath);
+      }
 
       return (ctx.body = {
         success: true,
@@ -422,55 +362,6 @@ export class MahasiswaGuidanceController {
           "Berhasil menyimpan Proposal Judul, mohon tunggu dosen pembimbing untuk memeriksa pengajuan kamu.",
       });
     } catch (error: any) {
-      ctx.status = HTTP_RESPONSE_CODE.INTERNAL_SERVER_ERROR;
-      const message = error?.message || "Unknown Error Message";
-      return (ctx.body = {
-        success: false,
-        message: message,
-      });
-    }
-  }
-
-  public static async submissionBab2(ctx: KoaContext, next: Next) {
-    try {
-    } catch (error: any) {
-      ctx.status = HTTP_RESPONSE_CODE.INTERNAL_SERVER_ERROR;
-      const message = error?.message || "Unknown Error Message";
-      return (ctx.body = {
-        success: false,
-        message: message,
-      });
-    }
-  }
-
-  public static async submissionBab3(ctx: KoaContext, next: Next) {
-    try {
-    } catch (error: any) {
-      ctx.status = HTTP_RESPONSE_CODE.INTERNAL_SERVER_ERROR;
-      const message = error?.message || "Unknown Error Message";
-      return (ctx.body = {
-        success: false,
-        message: message,
-      });
-    }
-  }
-
-  public static async submissionBab4(ctx: KoaContext, next: Next) {
-    try {
-    } catch (error: any) {
-      ctx.status = HTTP_RESPONSE_CODE.INTERNAL_SERVER_ERROR;
-      const message = error?.message || "Unknown Error Message";
-      return (ctx.body = {
-        success: false,
-        message: message,
-      });
-    }
-  }
-
-  public static async submissionBab5(ctx: KoaContext, next: Next) {
-    try {
-    } catch (error: any) {
-      ctx.request.files;
       ctx.status = HTTP_RESPONSE_CODE.INTERNAL_SERVER_ERROR;
       const message = error?.message || "Unknown Error Message";
       return (ctx.body = {

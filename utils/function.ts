@@ -1,6 +1,11 @@
+import formidable from "formidable";
 import { existsSync, mkdirSync, renameSync } from "fs";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
+
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 type ValidateFileType = {
   allowedExtension: Array<
@@ -50,11 +55,16 @@ export const generateUUID = () => {
 };
 
 export const validateFile = (
-  file: FileValidate,
+  file: formidable.File,
   { config }: { config: ValidateFileType }
 ): ValidateFileResult => {
   const defaultName = generateUUID();
-  const extension = path.extname(file.filename) as unknown as any;
+
+  if (!file.originalFilename) {
+    return { error: "Nama File tidak valid" };
+  }
+
+  const extension = path.extname(file.originalFilename) as any;
 
   if (!config.allowedExtension.includes(extension)) {
     return {
@@ -80,7 +90,7 @@ export const validateFile = (
   }
 
   const name = config.filename
-    ? `${config.filename}${extension}`
+    ? `${config.filename}`
     : `${defaultName}${extension}`;
 
   return { name: name };
@@ -99,4 +109,33 @@ export const moveFile = (
   }
 
   renameSync(oldPath, newPath);
+};
+
+export const nextOutlineStudent = async (user_id: number) => {
+  const studentOutline = await prisma.studentOutline.findUnique({
+    where: { user_id: user_id },
+  });
+
+  const studentGuidanceProgress = await prisma.studentGuidanceProgress.findMany(
+    {
+      select: { mst_outline_component_id: true },
+      where: { user_id: user_id },
+    }
+  );
+
+  const idsMasterOutline = studentGuidanceProgress.map(
+    (val) => val.mst_outline_component_id
+  );
+
+  const nextOutlineComponent = await prisma.outlineComponent.findFirst({
+    orderBy: {
+      order: "asc",
+    },
+    where: {
+      outline_id: studentOutline?.outline_id,
+      mst_outline_component_id: { notIn: idsMasterOutline },
+    },
+  });
+
+  return nextOutlineComponent;
 };

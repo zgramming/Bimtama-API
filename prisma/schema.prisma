@@ -321,8 +321,9 @@ model Guidance {
   user  Users @relation(fields: [user_id], references: [id], onDelete: Cascade)
   group Group @relation(fields: [group_id], references: [id], onDelete: Cascade)
 
-  mst_outline_component MasterData       @relation(fields: [current_progres_mst_outline_component_id], references: [id], onDelete: Cascade)
-  guidance_detail       GuidanceDetail[]
+  mst_outline_component     MasterData                @relation(fields: [current_progres_mst_outline_component_id], references: [id], onDelete: Cascade)
+  guidance_detail           GuidanceDetail[]
+  student_guidance_progress StudentGuidanceProgress[]
 
   @@map("guidance")
 }
@@ -338,6 +339,7 @@ model GuidanceDetail {
   lecture_note             String?              @db.Text()
   status                   GuidanceDetailStatus @default(progress)
   file                     String?              @db.Text()
+  file_lecture             String?              @db.Text()
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
@@ -445,6 +447,7 @@ model OutlineComponent {
 
 model StudentGuidanceProgress {
   id                       Int @id @default(autoincrement())
+  guidance_id              Int
   user_id                  Int
   mst_outline_component_id Int
 
@@ -453,9 +456,11 @@ model StudentGuidanceProgress {
   created_by Int?
   updated_by Int?
 
+  guidance              Guidance   @relation(fields: [guidance_id], references: [id], onDelete: Cascade)
   user                  Users      @relation(fields: [user_id], references: [id], onDelete: Cascade)
   mst_outline_component MasterData @relation(fields: [mst_outline_component_id], references: [id], onDelete: Cascade)
 
+  @@unique([user_id, mst_outline_component_id])
   @@map("student_guidance_progress")
 }
 

@@ -6,6 +6,7 @@ import { AdminOutlineController } from "./routes/admin/outline";
 import { AdminOutlineComponentController } from "./routes/admin/outline_component";
 import { DosenGroupController } from "./routes/dosen/group";
 import { DosenGroupMemberController } from "./routes/dosen/group_member";
+import { DosenGuidanceController } from "./routes/dosen/guidance";
 import { DosenMeetingScheduleController } from "./routes/dosen/meeting_schedule";
 import { DosenProfileController } from "./routes/dosen/profile";
 import { MahasiswaGroupController } from "./routes/mahasiswa/group";
@@ -88,6 +89,10 @@ router.del(
 );
 
 router.get(`/setting/master_data`, SettingMasterDataController.get);
+router.get(
+  `/setting/master_data/by-code/:code`,
+  SettingMasterDataController.getByCode
+);
 router.get(
   `/setting/master_data/by-category-code/:category_code`,
   SettingMasterDataController.getByCategoryCodeCategory
@@ -221,12 +226,19 @@ router.get(
 );
 router.put(`/dosen/profile`, validateJWTToken, DosenProfileController.update);
 
-router.post(`/dosen/guidance/submission/proposal-title`, validateJWTToken);
-router.post(`/dosen/guidance/submission/bab1`, validateJWTToken);
-router.post(`/dosen/guidance/submission/bab2`, validateJWTToken);
-router.post(`/dosen/guidance/submission/bab3`, validateJWTToken);
-router.post(`/dosen/guidance/submission/bab4`, validateJWTToken);
-router.post(`/dosen/guidance/submission/bab5`, validateJWTToken);
+router.get(
+  `/dosen/guidance/master-outline-component`,
+  DosenGuidanceController.getMasterOutline
+);
+router.get(
+  `/dosen/guidance/detail/:user_id/code-master-outline-component/:code`,
+  DosenGuidanceController.getGuidanceByCodeMasterOutline
+);
+router.put(
+  `/dosen/guidance/detail/submission/:id`,
+  validateJWTToken,
+  DosenGuidanceController.updateSubmission
+);
 
 //! Mahasiswa
 router.get(
@@ -319,40 +331,19 @@ router.get(
   validateJWTToken,
   MahasiswaGuidanceController.getOutline
 );
+router.get(
+  `/mahasiswa/guidance/progress/:user_id`,
+  MahasiswaGuidanceController.getGuidanceProgress
+);
 router.post(
   `/mahasiswa/guidance/submission/start`,
   validateJWTToken,
   MahasiswaGuidanceController.start
 );
 router.post(
-  `/mahasiswa/guidance/submission/proposal-title`,
+  `/mahasiswa/guidance/submission`,
   validateJWTToken,
-  MahasiswaGuidanceController.submissionTitle
-);
-router.post(
-  `/mahasiswa/guidance/submission/bab1`,
-  validateJWTToken,
-  MahasiswaGuidanceController.submissionBab1
-);
-router.post(
-  `/mahasiswa/guidance/submission/bab2`,
-  validateJWTToken,
-  MahasiswaGuidanceController.submissionBab2
-);
-router.post(
-  `/mahasiswa/guidance/submission/bab3`,
-  validateJWTToken,
-  MahasiswaGuidanceController.submissionBab3
-);
-router.post(
-  `/mahasiswa/guidance/submission/bab4`,
-  validateJWTToken,
-  MahasiswaGuidanceController.submissionBab4
-);
-router.post(
-  `/mahasiswa/guidance/submission/bab5`,
-  validateJWTToken,
-  MahasiswaGuidanceController.submissionBab5
+  MahasiswaGuidanceController.submission
 );
 
 export default router;

@@ -1,6 +1,7 @@
 import { Next } from "koa";
 
 import { CommonStatus, PrismaClient } from "@prisma/client";
+
 import { KoaContext } from "../../utils/types";
 
 const prisma = new PrismaClient();
@@ -46,6 +47,18 @@ export class SettingMasterDataController {
       // ...(offset !== 0 && { skip: +offset }),
     });
     return (ctx.body = { success: true, data: result });
+  }
+
+  public static async getByCode(ctx: KoaContext, next: Next) {
+    const { code } = ctx.params;
+    const result = await prisma.masterData.findUnique({
+      where: { code: code },
+    });
+    return (ctx.body = {
+      success: true,
+      message: "Berhasil mendapatkan master data",
+      data: result,
+    });
   }
 
   public static async getByCategoryCodeCategory(ctx: KoaContext, next: Next) {
