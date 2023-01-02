@@ -233,8 +233,8 @@ model Parameter {
 model Users {
   id                Int        @id @default(autoincrement())
   app_group_user_id Int
-  name              String?    @db.VarChar(100)
-  email             String     @unique @db.VarChar(100)
+  name              String     @db.VarChar(100)
+  email             String?    @unique @db.VarChar(100)
   username          String     @unique @db.VarChar(50)
   password          String     @db.Text
   status            UserStatus @default(inactive)

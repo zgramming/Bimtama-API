@@ -4,6 +4,7 @@ import { Next } from "koa";
 import { PrismaClient } from "@prisma/client";
 
 import { ERROR_TYPE_VALIDATION } from "../../utils/constant";
+import { generateToken } from "../../utils/token";
 import { KoaContext } from "../../utils/types";
 
 const prisma = new PrismaClient();
@@ -76,6 +77,7 @@ export class DosenProfileController {
         success: true,
         data: update,
         message: "Berhasil update profile",
+        token: generateToken(update),
       });
     } catch (error: any) {
       ctx.status = 500;

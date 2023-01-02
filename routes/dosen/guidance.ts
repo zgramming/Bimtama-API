@@ -17,9 +17,40 @@ const prisma = new PrismaClient();
 const validator = new Validator();
 
 export class DosenGuidanceController {
-  public static async get(ctx: KoaContext, next: Next) {}
   public static async getMasterOutline(ctx: KoaContext, next: Next) {
+    const { user_id } = ctx.params;
+    const activeGroup = await prisma.lectureGroupActive.findUnique({
+      where: { user_id: +user_id },
+    });
+
+    if (!activeGroup) {
+      ctx.status = HTTP_RESPONSE_CODE.NOT_FOUND;
+      return (ctx.body = {
+        success: false,
+        message: "Kamu tidak mempunyai group yang aktif",
+      });
+    }
+
     const result = await prisma.masterData.findMany({
+      select: {
+        id: true,
+        name: true,
+        code: true,
+        guidance_detail: {
+          select: {
+            id: true,
+            guidance_id: true,
+            user_id: true,
+            group_id: true,
+            title: true,
+            user: { select: { name: true } },
+          },
+          where: {
+            group_id: activeGroup.group_id,
+            status: "progress",
+          },
+        },
+      },
       where: { master_category_code: "OUTLINE_COMPONENT" },
     });
 
@@ -53,6 +84,7 @@ export class DosenGuidanceController {
         user: true,
       },
       where: {
+        group_id: activeGroup.group_id,
         ...(status && { status: status as any }),
         mst_outline_component: {
           code: code,

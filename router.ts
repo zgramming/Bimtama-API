@@ -31,6 +31,7 @@ const router = new Router<DefaultState, Context>();
 
 //! Authentication
 router.post(`/login`, AuthController.login);
+router.post(`/beta/register`, AuthController.betaRegister);
 
 //! Setting Section
 router.get(`/setting/user`, SettingUserController.getUsers);
@@ -227,7 +228,7 @@ router.get(
 router.put(`/dosen/profile`, validateJWTToken, DosenProfileController.update);
 
 router.get(
-  `/dosen/guidance/master-outline-component`,
+  `/dosen/guidance/master-outline-component/:user_id`,
   DosenGuidanceController.getMasterOutline
 );
 router.get(
