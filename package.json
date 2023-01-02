@@ -1,5 +1,6 @@
 {
   "scripts": {
+    "start": "ts-node ./app.ts",
     "dev": "npx nodemon app.ts",
     "prisma:build": "npm run prisma:migrate && npm run prisma:generate && npm run prisma:format",
     "prisma:build-seeder": "npm run prisma:migrate && npm run prisma:seeder && npm run prisma:generate && npm run prisma:format",
@@ -7,6 +8,7 @@
     "prisma:generate": "npx prisma generate",
     "prisma:format": "npx prisma format",
     "prisma:seeder": "ts-node prisma/seeds/seed.ts"
+    
   },
   "devDependencies": {
     "@koa/cors": "^4.0.0",
