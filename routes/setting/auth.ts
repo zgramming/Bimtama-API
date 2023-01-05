@@ -69,6 +69,7 @@ export class AuthController {
           email: true,
           phone: true,
           username: true,
+          app_group_user_id: true,
           app_group_user: {
             select: { id: true, code: true, name: true },
           },
@@ -144,13 +145,14 @@ export class AuthController {
           email: true,
           phone: true,
           username: true,
+          app_group_user_id: true,
           app_group_user: {
             select: { id: true, code: true, name: true },
           },
         },
         where: { id: user.id },
       });
-      
+
       return (ctx.body = {
         success: true,
         message: "Berhasil login",
