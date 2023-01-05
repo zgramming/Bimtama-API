@@ -227,14 +227,15 @@ export class DosenGroupController {
         description,
       };
 
-      const create = await prisma.group.update({
+      const update = await prisma.group.update({
         data: data,
         where: { id: +id },
       });
 
       return (ctx.body = {
-        data: create,
+        data: update,
         success: true,
+        message : `Berhasil mengupdate Kelompok ${update.name}`
       });
     } catch (e: any) {
       ctx.status = 500;
