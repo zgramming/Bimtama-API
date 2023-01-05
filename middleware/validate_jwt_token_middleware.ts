@@ -32,6 +32,7 @@ export const validateJWTToken = async (context: KoaContext, next: Next) => {
     const verify = jwt.verify(token, secretKey);
 
     /// key[payload] didapat dari config jwt.sign();
+    /// Location : utils/token.ts
     const { payload, iat, exp } = verify as JwtPayload;
     const { user } = payload;
 

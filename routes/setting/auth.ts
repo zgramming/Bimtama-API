@@ -53,6 +53,7 @@ export class AuthController {
       const userExists = await prisma.users.findUnique({
         where: { username: username },
       });
+
       if (userExists) {
         ctx.status = HTTP_RESPONSE_CODE.FORBIDDEN;
         return (ctx.body = {
@@ -62,6 +63,16 @@ export class AuthController {
       }
 
       const result = await prisma.users.create({
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true,
+          username: true,
+          app_group_user: {
+            select: { id: true, code: true, name: true },
+          },
+        },
         data: {
           username,
           name: username,
@@ -126,11 +137,25 @@ export class AuthController {
         });
       }
 
+      const data = await prisma.users.findUnique({
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true,
+          username: true,
+          app_group_user: {
+            select: { id: true, code: true, name: true },
+          },
+        },
+        where: { id: user.id },
+      });
+      
       return (ctx.body = {
         success: true,
         message: "Berhasil login",
-        data: user,
-        token: generateToken(user),
+        data: data,
+        token: generateToken(data),
       });
     } catch (error: any) {
       ctx.status = HTTP_RESPONSE_CODE.INTERNAL_SERVER_ERROR;
