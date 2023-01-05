@@ -54,7 +54,7 @@ export class DosenGroupController {
       ctx.status = HTTP_RESPONSE_CODE.FORBIDDEN;
       return (ctx.body = {
         success: false,
-        message: "Kamu belum mempunyai kelompok",
+        message: "Kamu belum mempunyai kelompok yang aktif",
       });
     }
 
@@ -79,8 +79,18 @@ export class DosenGroupController {
     }
 
     const groupMember = await prisma.groupMember.findMany({
-      include: { user: true },
-      where: { group_id: result.group_id, user_id: { not: + user_id } },
+      include: {
+        user: {
+          select: {
+            id: true,
+            app_group_user_id: true,
+            name: true,
+            email: true,
+            phone: true,
+          },
+        },
+      },
+      where: { group_id: result.group_id, user_id: { not: +user_id } },
     });
 
     return (ctx.body = {
