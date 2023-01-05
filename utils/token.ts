@@ -38,7 +38,7 @@ export const destroyCookiesUser = (ctx: KoaContext) => {
   return true;
 };
 
-export const generateToken = (user: Users) => {
+export const generateToken = (user: any) => {
   const secretKey = process.env.JWT_SECRECT_KEY ?? "-";
   const token = jwt.sign(
     {
@@ -49,9 +49,6 @@ export const generateToken = (user: Users) => {
     secretKey,
     { expiresIn: "1 days" }
   );
-
-  //   const decode = jwt.decode(token) as JwtPayload;
-  //   console.log({ token, decode: decode.payload });
 
   return token;
 };
