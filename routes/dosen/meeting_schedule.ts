@@ -218,10 +218,7 @@ export class DosenMeetingScheduleController {
         }
       );
 
-      return {
-        createMeeting,
-        createMeetingPersonal,
-      };
+      return createMeeting;
     });
 
     return (ctx.body = {
@@ -405,7 +402,7 @@ export class DosenMeetingScheduleController {
         },
       });
 
-      return { update, updatePersonal };
+      return update;
     });
 
     return (ctx.body = {
