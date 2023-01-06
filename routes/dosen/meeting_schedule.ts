@@ -14,9 +14,14 @@ export class DosenMeetingScheduleController {
   public static async getById(ctx: KoaContext, next: Next) {
     const { id } = ctx.params;
     const result = await prisma.meetingSchedule.findUnique({
-      include: { meeting_schedule_personal: true },
+      include: {
+        meeting_schedule_personal: {
+          include: { user: { select: { name: true } } },
+        },
+      },
       where: { id: +id },
     });
+
     return (ctx.body = {
       success: true,
       message: "Berhasil mendapatkan meeting",
