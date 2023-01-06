@@ -11,6 +11,19 @@ const prisma = new PrismaClient();
 const validator = new Validator();
 
 export class DosenMeetingScheduleController {
+  public static async getById(ctx: KoaContext, next: Next) {
+    const { id } = ctx.params;
+    const result = await prisma.meetingSchedule.findUnique({
+      include: { meeting_schedule_personal: true },
+      where: { id: +id },
+    });
+    return (ctx.body = {
+      success: true,
+      message: "Berhasil mendapatkan meeting",
+      data: result,
+    });
+  }
+
   public static async getByUserIdAndType(ctx: KoaContext, next: Next) {
     const { user_id, type } = ctx.params;
     const activeGroup = await prisma.lectureGroupActive.findUnique({
@@ -26,7 +39,6 @@ export class DosenMeetingScheduleController {
     }
 
     const result = await prisma.meetingSchedule.findMany({
-      include: { group: true },
       where: {
         type: type,
         group_id: activeGroup.group_id,

@@ -202,6 +202,11 @@ router.get(
 );
 
 router.get(
+  `/dosen/meeting-schedule/:id`,
+  validateJWTToken,
+  DosenMeetingScheduleController.getById
+);
+router.get(
   `/dosen/meeting-schedule/:user_id/type/:type`,
   validateJWTToken,
   DosenMeetingScheduleController.getByUserIdAndType
