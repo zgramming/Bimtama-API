@@ -8,7 +8,6 @@
     "prisma:generate": "npx prisma generate",
     "prisma:format": "npx prisma format",
     "prisma:seeder": "ts-node prisma/seeds/seed.ts"
-    
   },
   "devDependencies": {
     "@koa/cors": "^4.0.0",

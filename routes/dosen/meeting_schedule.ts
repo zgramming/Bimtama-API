@@ -11,6 +11,24 @@ const prisma = new PrismaClient();
 const validator = new Validator();
 
 export class DosenMeetingScheduleController {
+  public static async getById(ctx: KoaContext, next: Next) {
+    const { id } = ctx.params;
+    const result = await prisma.meetingSchedule.findUnique({
+      include: {
+        meeting_schedule_personal: {
+          include: { user: { select: { name: true } } },
+        },
+      },
+      where: { id: +id },
+    });
+
+    return (ctx.body = {
+      success: true,
+      message: "Berhasil mendapatkan meeting",
+      data: result,
+    });
+  }
+
   public static async getByUserIdAndType(ctx: KoaContext, next: Next) {
     const { user_id, type } = ctx.params;
     const activeGroup = await prisma.lectureGroupActive.findUnique({
@@ -26,7 +44,6 @@ export class DosenMeetingScheduleController {
     }
 
     const result = await prisma.meetingSchedule.findMany({
-      include: { group: true },
       where: {
         type: type,
         group_id: activeGroup.group_id,
@@ -102,8 +119,8 @@ export class DosenMeetingScheduleController {
         group_id: activeGroup.group_id,
         title,
         description,
-        start_date,
-        end_date,
+        start_date: new Date(start_date),
+        end_date: end_date ? new Date(end_date) : null,
         type,
         link_maps: link_maps ?? null,
         link_meeting: link_meeting ?? null,
@@ -186,8 +203,8 @@ export class DosenMeetingScheduleController {
           group_id: activeGroup.group_id,
           title,
           description,
-          start_date,
-          end_date,
+          start_date: new Date(start_date),
+          end_date: end_date ? new Date(end_date) : null,
           type,
           link_maps: link_maps ?? null,
           link_meeting: link_meeting ?? null,
@@ -206,10 +223,7 @@ export class DosenMeetingScheduleController {
         }
       );
 
-      return {
-        createMeeting,
-        createMeetingPersonal,
-      };
+      return createMeeting;
     });
 
     return (ctx.body = {
@@ -286,8 +300,8 @@ export class DosenMeetingScheduleController {
       data: {
         title,
         description,
-        start_date,
-        end_date,
+        start_date: new Date(start_date),
+        end_date: end_date ? new Date(end_date) : null,
         group_id: activeGroup.group_id,
         type,
         link_maps: link_maps ?? null,
@@ -376,8 +390,8 @@ export class DosenMeetingScheduleController {
         data: {
           title,
           description,
-          start_date,
-          end_date,
+          start_date: new Date(start_date),
+          end_date: end_date ? new Date(end_date) : null,
           group_id: activeGroup.group_id,
           type,
           link_maps: link_maps ?? null,
@@ -393,7 +407,7 @@ export class DosenMeetingScheduleController {
         },
       });
 
-      return { update, updatePersonal };
+      return update;
     });
 
     return (ctx.body = {
