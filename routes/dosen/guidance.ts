@@ -56,6 +56,7 @@ export class DosenGuidanceController {
 
     return (ctx.body = {
       success: true,
+      message: "Berhasil mendapatkan Master Outline",
       data: result,
     });
   }
@@ -81,7 +82,13 @@ export class DosenGuidanceController {
 
     const guidanceDetail = await prisma.guidanceDetail.findMany({
       include: {
-        user: true,
+        user: {
+          select: {
+            id: true,
+            app_group_user_id: true,
+            name: true,
+          },
+        },
       },
       where: {
         group_id: activeGroup.group_id,

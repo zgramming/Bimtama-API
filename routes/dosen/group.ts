@@ -109,6 +109,7 @@ export class DosenGroupController {
     });
     return (ctx.body = {
       success: true,
+      message :"Berhasil mendapatkan kelompok",
       data: result,
     });
   }
