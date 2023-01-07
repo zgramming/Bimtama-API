@@ -14,6 +14,14 @@ export class DosenProfileController {
   public static async getById(ctx: KoaContext, next: Next) {
     const { user_id } = ctx.params;
     const result = await prisma.users.findUnique({
+      select: {
+        id: true,
+        app_group_user_id: true,
+        username: true,
+        name: true,
+        phone: true,
+        email: true,
+      },
       where: {
         id: +user_id,
       },
@@ -29,6 +37,7 @@ export class DosenProfileController {
 
     return (ctx.body = {
       success: true,
+      message: "Berhasil mendapatkan profile",
       data: result,
     });
   }
@@ -64,6 +73,21 @@ export class DosenProfileController {
       }
 
       const update = await prisma.users.update({
+        select: {
+          id: true,
+          app_group_user_id: true,
+          username: true,
+          name: true,
+          phone: true,
+          email: true,
+          app_group_user: {
+            select: {
+              id: true,
+              code: true,
+              name: true,
+            },
+          },
+        },
         where: {
           id: +user_id,
         },
