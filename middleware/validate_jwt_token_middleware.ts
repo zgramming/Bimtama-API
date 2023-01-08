@@ -47,8 +47,9 @@ export const validateJWTToken = async (context: KoaContext, next: Next) => {
     await next();
   } catch (error: any) {
     context.status = HTTP_RESPONSE_CODE.INTERNAL_SERVER_ERROR;
-    let data: { message: string; stackTrace?: string } = {
+    let data: { success: boolean; message: string; stackTrace?: string } = {
       message: error?.message ?? "Unknown Message Error",
+      success: false,
     };
 
     if (
