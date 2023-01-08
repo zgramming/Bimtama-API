@@ -59,7 +59,7 @@ export const validateFile = (
   { config }: { config: ValidateFileType }
 ): ValidateFileResult => {
   const defaultName = generateUUID();
-
+  
   if (!file.originalFilename) {
     return { error: "Nama File tidak valid" };
   }
