@@ -329,7 +329,11 @@ export class MahasiswaGuidanceController {
         const { error, name } = validateFile(file, {
           config: {
             allowedExtension: [".doc", ".docx", ".pdf"],
-            allowedMimetypes: ["application/msword", "application/pdf"],
+            allowedMimetypes: [
+              "application/msword",
+              "application/pdf",
+              "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            ],
             allowedSize: 2,
           },
         });
