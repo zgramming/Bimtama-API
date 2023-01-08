@@ -233,6 +233,10 @@ router.get(
 router.put(`/dosen/profile`, validateJWTToken, DosenProfileController.update);
 
 router.get(
+  `/dosen/guidance/detail/submission/:id`,
+  DosenGuidanceController.getById
+);
+router.get(
   `/dosen/guidance/master-outline-component/:user_id`,
   DosenGuidanceController.getMasterOutline
 );

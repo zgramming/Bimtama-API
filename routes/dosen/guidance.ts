@@ -17,6 +17,23 @@ const prisma = new PrismaClient();
 const validator = new Validator();
 
 export class DosenGuidanceController {
+  public static async getById(ctx: KoaContext, next: Next) {
+    const { id } = ctx.params;
+    const result = await prisma.guidanceDetail.findUnique({
+      include: {
+        user: {
+          select: { id: true, name: true },
+        },
+      },
+      where: { id: id },
+    });
+
+    return (ctx.body = {
+      success: true,
+      message: "Berhasil mendapatkan bimbingan",
+      data: result,
+    });
+  }
   public static async getMasterOutline(ctx: KoaContext, next: Next) {
     const { user_id } = ctx.params;
     const activeGroup = await prisma.lectureGroupActive.findUnique({
