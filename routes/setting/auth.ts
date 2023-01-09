@@ -160,6 +160,7 @@ export class AuthController {
         token: generateToken(data),
       });
     } catch (error: any) {
+      
       ctx.status = HTTP_RESPONSE_CODE.INTERNAL_SERVER_ERROR;
       return (ctx.body = {
         success: false,

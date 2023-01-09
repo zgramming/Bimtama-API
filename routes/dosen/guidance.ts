@@ -114,6 +114,7 @@ export class DosenGuidanceController {
           code: code,
         },
       },
+      orderBy: { created_at: "desc" },
     });
 
     return (ctx.body = {
@@ -128,6 +129,7 @@ export class DosenGuidanceController {
       const { id } = ctx.params;
       const { lecture_note, status } = ctx.request.body;
       const files = ctx.request.files;
+      console.log({ files });
 
       const row = await prisma.guidanceDetail.findUnique({
         where: { id: id },
@@ -163,7 +165,7 @@ export class DosenGuidanceController {
       const data = {
         lecture_note,
         status,
-        file_lecture: "",
+        file_lecture: row.file_lecture,
       };
 
       const moveFileConfig = {
@@ -172,10 +174,15 @@ export class DosenGuidanceController {
       };
       if (files?.file) {
         const file = files.file as formidable.File;
+
         const { error, name } = validateFile(file, {
           config: {
             allowedExtension: [".doc", ".docx", ".pdf"],
-            allowedMimetypes: ["application/pdf", "application/msword"],
+            allowedMimetypes: [
+              "application/pdf",
+              "application/msword",
+              "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            ],
             allowedSize: 2,
             filename: row.file_lecture ?? undefined,
           },
@@ -184,7 +191,7 @@ export class DosenGuidanceController {
         if (error) {
           ctx.status = HTTP_RESPONSE_CODE.BAD_REQUEST;
           return (ctx.body = {
-            success: true,
+            success: false,
             message: error,
           });
         }
