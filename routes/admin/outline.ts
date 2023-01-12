@@ -29,7 +29,8 @@ export class AdminOutlineController {
     });
 
     return (ctx.body = {
-      success: false,
+      success: true,
+      message: "Berhasil mendapatkan outline",
       data: result,
     });
   }

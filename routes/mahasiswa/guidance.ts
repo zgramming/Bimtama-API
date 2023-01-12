@@ -20,11 +20,6 @@ export class MahasiswaGuidanceController {
   public static async get(ctx: KoaContext, next: Next) {
     const { user_id } = ctx.params;
     const result = await prisma.guidance.findUnique({
-      include: {
-        group: true,
-        mst_outline_component: true,
-        user: true,
-      },
       where: { user_id: +user_id },
     });
 
@@ -159,7 +154,7 @@ export class MahasiswaGuidanceController {
       if (!studentOutline) {
         ctx.status = HTTP_RESPONSE_CODE.NOT_FOUND;
         return (ctx.body = {
-          success: true,
+          success: false,
           message:
             "Kamu belum memilih outline, silahkan pilih outline terlebih dahulu.",
         });
@@ -173,7 +168,7 @@ export class MahasiswaGuidanceController {
       if (!outlineComponentFirst) {
         ctx.status = HTTP_RESPONSE_CODE.NOT_FOUND;
         return (ctx.body = {
-          success: true,
+          success: false,
           message: `Outline Component untuk outline ${studentOutline.outline.title} tidak ditemukan`,
         });
       }
@@ -195,12 +190,12 @@ export class MahasiswaGuidanceController {
           update: data,
         });
 
-        const nextOutline = await nextOutlineStudent(user_id);
+        const nextOutline = await nextOutlineStudent(+user_id);
         if (nextOutline) {
           const dataUpsert = {
             guidance_id: upsert.id,
             mst_outline_component_id: nextOutline.mst_outline_component_id,
-            user_id: user_id,
+            user_id: +user_id,
           };
 
           const updateStudentGuidanceProgress =
@@ -209,7 +204,7 @@ export class MahasiswaGuidanceController {
                 user_id_mst_outline_component_id: {
                   mst_outline_component_id:
                     nextOutline.mst_outline_component_id,
-                  user_id: user_id,
+                  user_id: +user_id,
                 },
               },
               create: dataUpsert,
@@ -217,7 +212,7 @@ export class MahasiswaGuidanceController {
             });
         }
 
-        return { upsert };
+        return upsert;
       });
 
       return (ctx.body = {

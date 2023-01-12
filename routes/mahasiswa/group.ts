@@ -21,9 +21,9 @@ export class MahasiswaGroupController {
     });
 
     if (!groupMember) {
-      ctx.status = 404;
       return (ctx.body = {
-        success: false,
+        success: true,
+        message: "Kelompok tidak ditemukan",
         data: null,
       });
     }
@@ -35,7 +35,16 @@ export class MahasiswaGroupController {
       include: {
         group_member: {
           include: {
-            user: true,
+            user: {
+              select: {
+                id: true,
+                app_group_user_id: true,
+                name: true,
+                email: true,
+                username: true,
+                phone: true,
+              },
+            },
           },
           orderBy: {
             is_admin: "desc",
@@ -46,6 +55,7 @@ export class MahasiswaGroupController {
 
     return (ctx.body = {
       success: true,
+      message: "Berhasil mendapatkan kelompok",
       data: result,
     });
   }
@@ -62,16 +72,16 @@ export class MahasiswaGroupController {
     });
 
     if (!result) {
-      ctx.status = 404;
       return (ctx.body = {
-        success: false,
-        data: null,
+        success: true,
         message: `Kelompok dengan code ${group_code} tidak ditemukan`,
+        data: null,
       });
     }
 
     return (ctx.body = {
-      success: false,
+      success: true,
+      message: "Berhasil mendapatkan kelompok",
       data: result,
     });
   }
@@ -85,8 +95,8 @@ export class MahasiswaGroupController {
         user_id: { type: "number" },
       });
       const validate = await createSchema({
-        group_id,
-        user_id,
+        group_id: +group_id,
+        user_id: +user_id,
       });
 
       if (validate !== true) {
@@ -148,7 +158,7 @@ export class MahasiswaGroupController {
       }
 
       const del = await prisma.groupMember.deleteMany({
-        where: { user_id: user_id },
+        where: { user_id: +user_id },
       });
 
       return (ctx.body = {

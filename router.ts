@@ -67,6 +67,7 @@ router.del(`/setting/menu/:id`, SettingMenuController.deleteMenu);
 router.get(`/setting/access_modul`, SettingAccessModulController.get);
 router.get(
   `/setting/access_modul/by_user_group/:app_group_user_id`,
+  validateJWTToken,
   SettingAccessModulController.getByUserGroup
 );
 router.post(`/setting/access_modul`, SettingAccessModulController.create);
@@ -74,6 +75,7 @@ router.post(`/setting/access_modul`, SettingAccessModulController.create);
 router.get(`/setting/access_menu`, SettingAccessMenuController.get);
 router.get(
   `/setting/access_menu/by_user_group/:app_group_user_id`,
+  validateJWTToken,
   SettingAccessMenuController.getByUserGroup
 );
 router.post(`/setting/access_menu`, SettingAccessMenuController.create);

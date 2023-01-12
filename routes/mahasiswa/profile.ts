@@ -5,15 +5,23 @@ import { PrismaClient } from "@prisma/client";
 
 import { ERROR_TYPE_VALIDATION } from "../../utils/constant";
 import { KoaContext } from "../../utils/types";
+import { generateToken } from "../../utils/token";
 
 const prisma = new PrismaClient();
 const validator = new Validator();
 
 export class MahasiswaProfileController {
-
   public static async getById(ctx: KoaContext, next: Next) {
     const { user_id } = ctx.params;
     const result = await prisma.users.findUnique({
+      select: {
+        id: true,
+        app_group_user_id: true,
+        username: true,
+        name: true,
+        phone: true,
+        email: true,
+      },
       where: {
         id: +user_id,
       },
@@ -29,6 +37,7 @@ export class MahasiswaProfileController {
 
     return (ctx.body = {
       success: true,
+      message: `Berhasil mendapatkan profile ${result.name}`,
       data: result,
     });
   }
@@ -65,6 +74,21 @@ export class MahasiswaProfileController {
       }
 
       const update = await prisma.users.update({
+        select: {
+          id: true,
+          app_group_user_id: true,
+          username: true,
+          name: true,
+          phone: true,
+          email: true,
+          app_group_user: {
+            select: {
+              id: true,
+              code: true,
+              name: true,
+            },
+          },
+        },
         where: {
           id: +user_id,
         },
@@ -76,9 +100,11 @@ export class MahasiswaProfileController {
 
       return (ctx.body = {
         success: true,
-        data: update,
         message: "Berhasil update profile",
+        token: generateToken(update),
+        data: update,
       });
+
     } catch (error: any) {
       ctx.status = 500;
       const message = error?.message || "Unknown Error Message";

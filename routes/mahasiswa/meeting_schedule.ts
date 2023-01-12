@@ -77,6 +77,7 @@ export class MahasiswaMeetingScheduleController {
 
       return (ctx.body = {
         success: true,
+        message: "Berhasil mendapatkan jadwal pertemuan",
         data: result,
       });
     } catch (error: any) {
