@@ -108,11 +108,16 @@ export class MahasiswaGuidanceController {
       }
 
       const guidanceDetail = await prisma.guidanceDetail.findMany({
-        orderBy: { created_at: "desc" },
+        include: {
+          mst_outline_component: {
+            select: { id: true, code: true, name: true },
+          },
+        },
         where: {
           user_id: +user_id,
           mst_outline_component_id: mstOutlineComponent.id,
         },
+        orderBy: { created_at: "desc" },
       });
 
       return (ctx.body = {
@@ -255,6 +260,7 @@ export class MahasiswaGuidanceController {
     try {
       const { user_id, title, description, code_master_outline_component } =
         ctx.request.body;
+
       const files = ctx.request.files;
 
       const createSchema = validator.compile({
@@ -262,6 +268,7 @@ export class MahasiswaGuidanceController {
         title: { type: "string" },
         code_master_outline_component: { type: "string" },
       });
+
       const validate = await createSchema({
         title,
         user_id: +user_id,
