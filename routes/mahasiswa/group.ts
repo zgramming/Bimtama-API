@@ -166,7 +166,7 @@ export class MahasiswaGroupController {
           },
         });
 
-        const delGuidance = await trx.guidance.delete({
+        const delGuidance = await trx.guidance.deleteMany({
           where: { user_id: +user_id },
         });
 
@@ -179,6 +179,7 @@ export class MahasiswaGroupController {
         message: "Berhasil keluar group",
       });
     } catch (error: any) {
+
       ctx.status = 500;
       const message = error?.message || "Unknown Error Message";
       return (ctx.body = {
