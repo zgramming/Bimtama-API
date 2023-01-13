@@ -21,9 +21,9 @@ export class MahasiswaGroupController {
     });
 
     if (!groupMember) {
-      ctx.status = 404;
       return (ctx.body = {
-        success: false,
+        success: true,
+        message: "Kelompok tidak ditemukan",
         data: null,
       });
     }
@@ -35,7 +35,16 @@ export class MahasiswaGroupController {
       include: {
         group_member: {
           include: {
-            user: true,
+            user: {
+              select: {
+                id: true,
+                app_group_user_id: true,
+                name: true,
+                email: true,
+                username: true,
+                phone: true,
+              },
+            },
           },
           orderBy: {
             is_admin: "desc",
@@ -46,6 +55,7 @@ export class MahasiswaGroupController {
 
     return (ctx.body = {
       success: true,
+      message: "Berhasil mendapatkan kelompok",
       data: result,
     });
   }
@@ -62,16 +72,16 @@ export class MahasiswaGroupController {
     });
 
     if (!result) {
-      ctx.status = 404;
       return (ctx.body = {
-        success: false,
-        data: null,
+        success: true,
         message: `Kelompok dengan code ${group_code} tidak ditemukan`,
+        data: null,
       });
     }
 
     return (ctx.body = {
-      success: false,
+      success: true,
+      message: "Berhasil mendapatkan kelompok",
       data: result,
     });
   }
@@ -85,8 +95,8 @@ export class MahasiswaGroupController {
         user_id: { type: "number" },
       });
       const validate = await createSchema({
-        group_id,
-        user_id,
+        group_id: +group_id,
+        user_id: +user_id,
       });
 
       if (validate !== true) {
@@ -133,6 +143,7 @@ export class MahasiswaGroupController {
         user_id: { type: "number" },
         group_id: { type: "number" },
       });
+
       const validate = await createSchema({
         user_id: +user_id,
         group_id: +group_id,
@@ -147,16 +158,28 @@ export class MahasiswaGroupController {
         });
       }
 
-      const del = await prisma.groupMember.deleteMany({
-        where: { user_id: user_id },
+      /// When exit group, delete group member and guidance by user_id
+      const transaction = await prisma.$transaction(async (trx) => {
+        const delGroupMember = await trx.groupMember.delete({
+          where: {
+            group_id_user_id: { group_id: +group_id, user_id: +user_id },
+          },
+        });
+
+        const delGuidance = await trx.guidance.deleteMany({
+          where: { user_id: +user_id },
+        });
+
+        return true;
       });
 
       return (ctx.body = {
         success: true,
-        data: del.count,
+        data: transaction,
         message: "Berhasil keluar group",
       });
     } catch (error: any) {
+
       ctx.status = 500;
       const message = error?.message || "Unknown Error Message";
       return (ctx.body = {

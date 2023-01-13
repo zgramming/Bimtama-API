@@ -20,11 +20,6 @@ export class MahasiswaGuidanceController {
   public static async get(ctx: KoaContext, next: Next) {
     const { user_id } = ctx.params;
     const result = await prisma.guidance.findUnique({
-      include: {
-        group: true,
-        mst_outline_component: true,
-        user: true,
-      },
       where: { user_id: +user_id },
     });
 
@@ -39,13 +34,30 @@ export class MahasiswaGuidanceController {
     const { user_id } = ctx.params;
     const studentOutline = await prisma.studentOutline.findUnique({
       include: {
-        user: true,
+        user: {
+          select: {
+            id: true,
+            app_group_user_id: true,
+            name: true,
+            username: true,
+          },
+        },
         outline: {
           include: {
-            master_outline: true,
             outline_component: {
-              include: {
-                master_outline_component: true,
+              select: {
+                id: true,
+                mst_outline_component_id: true,
+                outline_id: true,
+                title: true,
+                order: true,
+                master_outline_component: {
+                  select: {
+                    id: true,
+                    name: true,
+                    code: true,
+                  },
+                },
               },
               orderBy: {
                 order: "asc",
@@ -67,11 +79,14 @@ export class MahasiswaGuidanceController {
   public static async getGuidanceProgress(ctx: KoaContext, next: Next) {
     const { user_id } = ctx.params;
     const result = await prisma.studentGuidanceProgress.findMany({
+      include: {
+        mst_outline_component: { select: { id: true, name: true, code: true } },
+      },
       where: { user_id: +user_id },
     });
 
     return (ctx.body = {
-      success: false,
+      success: true,
       message: "Berhasil mendapatkan progress bimbingan",
       data: result,
     });
@@ -93,11 +108,16 @@ export class MahasiswaGuidanceController {
       }
 
       const guidanceDetail = await prisma.guidanceDetail.findMany({
-        orderBy: { created_at: "desc" },
+        include: {
+          mst_outline_component: {
+            select: { id: true, code: true, name: true },
+          },
+        },
         where: {
           user_id: +user_id,
           mst_outline_component_id: mstOutlineComponent.id,
         },
+        orderBy: { created_at: "desc" },
       });
 
       return (ctx.body = {
@@ -159,7 +179,7 @@ export class MahasiswaGuidanceController {
       if (!studentOutline) {
         ctx.status = HTTP_RESPONSE_CODE.NOT_FOUND;
         return (ctx.body = {
-          success: true,
+          success: false,
           message:
             "Kamu belum memilih outline, silahkan pilih outline terlebih dahulu.",
         });
@@ -173,7 +193,7 @@ export class MahasiswaGuidanceController {
       if (!outlineComponentFirst) {
         ctx.status = HTTP_RESPONSE_CODE.NOT_FOUND;
         return (ctx.body = {
-          success: true,
+          success: false,
           message: `Outline Component untuk outline ${studentOutline.outline.title} tidak ditemukan`,
         });
       }
@@ -195,12 +215,12 @@ export class MahasiswaGuidanceController {
           update: data,
         });
 
-        const nextOutline = await nextOutlineStudent(user_id);
+        const nextOutline = await nextOutlineStudent(+user_id);
         if (nextOutline) {
           const dataUpsert = {
             guidance_id: upsert.id,
             mst_outline_component_id: nextOutline.mst_outline_component_id,
-            user_id: user_id,
+            user_id: +user_id,
           };
 
           const updateStudentGuidanceProgress =
@@ -209,7 +229,7 @@ export class MahasiswaGuidanceController {
                 user_id_mst_outline_component_id: {
                   mst_outline_component_id:
                     nextOutline.mst_outline_component_id,
-                  user_id: user_id,
+                  user_id: +user_id,
                 },
               },
               create: dataUpsert,
@@ -217,7 +237,7 @@ export class MahasiswaGuidanceController {
             });
         }
 
-        return { upsert };
+        return upsert;
       });
 
       return (ctx.body = {
@@ -240,6 +260,7 @@ export class MahasiswaGuidanceController {
     try {
       const { user_id, title, description, code_master_outline_component } =
         ctx.request.body;
+
       const files = ctx.request.files;
 
       const createSchema = validator.compile({
@@ -247,6 +268,7 @@ export class MahasiswaGuidanceController {
         title: { type: "string" },
         code_master_outline_component: { type: "string" },
       });
+
       const validate = await createSchema({
         title,
         user_id: +user_id,
@@ -352,7 +374,7 @@ export class MahasiswaGuidanceController {
       }
 
       const create = await prisma.guidanceDetail.create({
-        data: { ...data },
+        data: { ...data, file: data.file ? data.file : null },
       });
 
       if (moveFileConfig.newPath) {

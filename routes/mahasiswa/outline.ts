@@ -36,11 +36,23 @@ export class MahasiswaOutlineController {
   public static async getByUserId(ctx: KoaContext, next: Next) {
     const { user_id } = ctx.params;
     const result = await prisma.studentOutline.findUnique({
-      include: { outline: true, user: true },
+      include: {
+        outline: true,
+        user: {
+          select: {
+            id: true,
+            app_group_user_id: true,
+            name: true,
+            username: true,
+            email: true,
+          },
+        },
+      },
       where: { user_id: +user_id },
     });
     return (ctx.body = {
       success: true,
+      message: "Berhasil mendapatkan outline",
       data: result,
     });
   }
@@ -68,8 +80,8 @@ export class MahasiswaOutlineController {
       }
 
       const data = {
-        outline_id,
-        user_id,
+        outline_id: +outline_id,
+        user_id: +user_id,
       };
 
       const studentGuidance = await prisma.guidance.findUnique({
