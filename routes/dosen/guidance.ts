@@ -41,10 +41,10 @@ export class DosenGuidanceController {
     });
 
     if (!activeGroup) {
-      ctx.status = HTTP_RESPONSE_CODE.NOT_FOUND;
       return (ctx.body = {
         success: false,
         message: "Kamu tidak mempunyai group yang aktif",
+        data : null,
       });
     }
 
@@ -88,6 +88,9 @@ export class DosenGuidanceController {
     const activeGroup = await prisma.lectureGroupActive.findUnique({
       where: { user_id: +user_id },
     });
+
+    console.log({activeGroup});
+    
 
     if (!activeGroup) {
       ctx.status = HTTP_RESPONSE_CODE.FORBIDDEN;

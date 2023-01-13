@@ -143,6 +143,7 @@ export class MahasiswaGroupController {
         user_id: { type: "number" },
         group_id: { type: "number" },
       });
+
       const validate = await createSchema({
         user_id: +user_id,
         group_id: +group_id,
@@ -157,13 +158,24 @@ export class MahasiswaGroupController {
         });
       }
 
-      const del = await prisma.groupMember.deleteMany({
-        where: { user_id: +user_id },
+      /// When exit group, delete group member and guidance by user_id
+      const transaction = await prisma.$transaction(async (trx) => {
+        const delGroupMember = await trx.groupMember.delete({
+          where: {
+            group_id_user_id: { group_id: +group_id, user_id: +user_id },
+          },
+        });
+
+        const delGuidance = await trx.guidance.delete({
+          where: { user_id: +user_id },
+        });
+
+        return true;
       });
 
       return (ctx.body = {
         success: true,
-        data: del.count,
+        data: transaction,
         message: "Berhasil keluar group",
       });
     } catch (error: any) {
