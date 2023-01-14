@@ -26,8 +26,47 @@ import { SettingModulController } from "./routes/setting/modul";
 import { SettingParameterController } from "./routes/setting/parameter";
 import { SettingUserController } from "./routes/setting/user";
 import { SettingUserGroupController } from "./routes/setting/user_group";
+import { sendSingleNotification } from "./utils/firebase_messaging";
+import { generateUUID } from "./utils/function";
+import { HTTP_RESPONSE_CODE } from "./utils/http_response_code";
 
 const router = new Router<DefaultState, Context>();
+
+router.post("/notification/send", async (ctx, next) => {
+  try {
+    const token = "e_gLxcnNQDmACuAD26PKNs:APA91bE-bIhwy_rJU-1JD_Ctno1CVTQVKDaU3j9OODTIU_TC7k4vYiGBy1S2n-DwCS1SCsEiy807sRNKmu8o-yiq-EAi-9qJI2ZoC8Yv4fQK11y5AmJuodn9GQWnYuuZd927D3BHiqSI";
+    const messaging = await sendSingleNotification(token, {
+      title: "Ini adalah title",
+      body: "Ini adalah body",
+      data: {
+        id: generateUUID(),
+        name: "Zeffry Reynando",
+      },
+    });
+
+    if (messaging.failureCount > 0) {
+      ctx.status = HTTP_RESPONSE_CODE.BAD_REQUEST;
+      return (ctx.body = {
+        success: false,
+        message: "Failed to send notification",
+        description: messaging.results
+          .map((result) => result.error?.message)
+          .join("\n"),
+      });
+    }
+
+    return (ctx.body = {
+      success: true,
+    });
+  } catch (error: any) {
+    console.log({ error });
+    ctx.status = HTTP_RESPONSE_CODE.INTERNAL_SERVER_ERROR;
+    return (ctx.body = {
+      success: false,
+      message: error?.message ?? "Unknown Error",
+    });
+  }
+});
 
 //! Authentication
 router.post(`/login`, AuthController.login);

@@ -1,4 +1,4 @@
-import { initializeApp } from 'firebase-admin/app';
+import admin from 'firebase-admin';
 import Koa from 'koa';
 import KoaBody from 'koa-body';
 import Json from 'koa-json';
@@ -9,10 +9,17 @@ import Serve from 'koa-static';
 import cors from '@koa/cors';
 
 import router from './router';
+import { firebaseDatabaseURL } from './utils/constant';
+
+const firebaseAccountService = require("./firebase-service-account.json");
 
 const app = new Koa();
 
-initializeApp();
+admin.initializeApp({
+  credential: admin.credential.cert(firebaseAccountService),
+  databaseURL: firebaseDatabaseURL,
+});
+
 require("dotenv").config();
 
 /// Proxy Initialize, for trust NginX x-forwarded-* header
