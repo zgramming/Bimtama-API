@@ -240,6 +240,7 @@ model Users {
   status            UserStatus @default(inactive)
   phone             String?    @db.VarChar(15)
   image             String?    @db.Text
+  token_firebase    String?    @unique @db.VarChar(255)
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
