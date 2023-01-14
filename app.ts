@@ -1,16 +1,18 @@
-import Koa from "koa";
-import KoaBody from "koa-body";
-import Json from "koa-json";
-import Logger from "koa-logger";
-import session from "koa-session";
-import Serve from "koa-static";
+import { initializeApp } from 'firebase-admin/app';
+import Koa from 'koa';
+import KoaBody from 'koa-body';
+import Json from 'koa-json';
+import Logger from 'koa-logger';
+import session from 'koa-session';
+import Serve from 'koa-static';
 
-import cors from "@koa/cors";
+import cors from '@koa/cors';
 
-import router from "./router";
+import router from './router';
 
 const app = new Koa();
 
+initializeApp();
 require("dotenv").config();
 
 /// Proxy Initialize, for trust NginX x-forwarded-* header

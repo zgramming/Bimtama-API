@@ -31,6 +31,7 @@ const router = new Router<DefaultState, Context>();
 
 //! Authentication
 router.post(`/login`, AuthController.login);
+router.post(`/logout`, AuthController.logout);
 router.post(`/beta/register`, AuthController.betaRegister);
 
 //! Setting Section
