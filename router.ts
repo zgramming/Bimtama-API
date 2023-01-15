@@ -26,8 +26,48 @@ import { SettingModulController } from "./routes/setting/modul";
 import { SettingParameterController } from "./routes/setting/parameter";
 import { SettingUserController } from "./routes/setting/user";
 import { SettingUserGroupController } from "./routes/setting/user_group";
+import { sendSingleNotification } from "./utils/firebase_messaging";
+import { generateUUID } from "./utils/function";
+import { HTTP_RESPONSE_CODE } from "./utils/http_response_code";
 
 const router = new Router<DefaultState, Context>();
+
+router.post("/notification/send", async (ctx, next) => {
+  try {
+    const { token } = ctx.request.body;
+    const messaging = await sendSingleNotification(token, {
+      title: "Ini adalah title",
+      body: "Ini adalah body",
+      data: {
+        id: generateUUID(),
+        name: "Zeffry Reynando",
+      },
+    });
+
+    if (messaging.failureCount > 0) {
+      ctx.status = HTTP_RESPONSE_CODE.BAD_REQUEST;
+      return (ctx.body = {
+        success: false,
+        message: "Failed to send notification",
+        description: messaging.results
+          .map((result) => result.error?.message)
+          .join("\n"),
+      });
+    }
+
+    return (ctx.body = {
+      success: true,
+      data : messaging.results,
+    });
+  } catch (error: any) {
+    console.log({ error });
+    ctx.status = HTTP_RESPONSE_CODE.INTERNAL_SERVER_ERROR;
+    return (ctx.body = {
+      success: false,
+      message: error?.message ?? "Unknown Error",
+    });
+  }
+});
 
 //! Authentication
 router.post(`/login`, AuthController.login);
@@ -214,17 +254,24 @@ router.get(
   validateJWTToken,
   DosenMeetingScheduleController.getByUserIdAndType
 );
-router.post(`/dosen/meeting-schedule`, DosenMeetingScheduleController.create);
+router.post(
+  `/dosen/meeting-schedule`,
+  validateJWTToken,
+  DosenMeetingScheduleController.create
+);
 router.post(
   `/dosen/meeting-schedule/personal`,
+  validateJWTToken,
   DosenMeetingScheduleController.createPersonal
 );
 router.put(
   `/dosen/meeting-schedule/:id`,
+  validateJWTToken,
   DosenMeetingScheduleController.update
 );
 router.put(
   `/dosen/meeting-schedule/personal/:id`,
+  validateJWTToken,
   DosenMeetingScheduleController.updatePersonal
 );
 
@@ -237,14 +284,18 @@ router.put(`/dosen/profile`, validateJWTToken, DosenProfileController.update);
 
 router.get(
   `/dosen/guidance/detail/submission/:id`,
+  validateJWTToken,
   DosenGuidanceController.getById
 );
 router.get(
   `/dosen/guidance/master-outline-component/:user_id`,
+  validateJWTToken,
+
   DosenGuidanceController.getMasterOutline
 );
 router.get(
   `/dosen/guidance/detail/:user_id/code-master-outline-component/:code`,
+  validateJWTToken,
   DosenGuidanceController.getGuidanceByCodeMasterOutline
 );
 router.put(

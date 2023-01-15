@@ -4,7 +4,7 @@ import { Next, ParameterizedContext } from "koa";
 import { PrismaClient } from "@prisma/client";
 
 import { ERROR_TYPE_VALIDATION } from "../../utils/constant";
-import { IRouterParamContext } from "koa-router";
+import { sendMultipleNotification } from "../../utils/firebase_messaging";
 import { KoaContext } from "../../utils/types";
 
 const prisma = new PrismaClient();
@@ -114,16 +114,51 @@ export class MahasiswaGroupController {
         is_admin: false,
       };
 
-      const upsert = await prisma.groupMember.upsert({
-        where: { group_id_user_id: { group_id: +group_id, user_id: +user_id } },
-        create: data,
-        update: data,
+      const transaction = await prisma.$transaction(async (trx) => {
+        const upsert = await prisma.groupMember.upsert({
+          where: {
+            group_id_user_id: { group_id: +group_id, user_id: +user_id },
+          },
+          create: data,
+          update: data,
+        });
+
+        // Send notification to group member
+        const tokens = (
+          await trx.groupMember.findMany({
+            select: {
+              user: {
+                select: {
+                  token_firebase: true,
+                },
+              },
+            },
+            where: {
+              group_id: +group_id,
+              user_id: { not: +user_id },
+              user: {
+                token_firebase: { not: null },
+              },
+            },
+          })
+        ).map((item) => item.user.token_firebase ?? "");
+
+        const user = await trx.users.findUniqueOrThrow({
+          where: { id: +user_id },
+        });
+
+        const sendNotification = await sendMultipleNotification(tokens, {
+          title: `💁‍♂️ ${user.name} telah bergabung ke dalam kelompok`,
+          body: `Kamu dapat melihatnya di menu kelompok`,
+        });
+
+        return { upsert };
       });
 
       return (ctx.body = {
         success: true,
         message: `Berhasil masuk ke dalam kelompok`,
-        data: upsert,
+        data: transaction.upsert,
       });
     } catch (error: any) {
       ctx.status = 500;
@@ -170,7 +205,36 @@ export class MahasiswaGroupController {
           where: { user_id: +user_id },
         });
 
-        return true;
+        /// Send notification to group member
+        const tokens = (
+          await trx.groupMember.findMany({
+            select: {
+              user: {
+                select: {
+                  token_firebase: true,
+                },
+              },
+            },
+            where: {
+              group_id: +group_id,
+              user_id: { not: +user_id },
+              user: {
+                token_firebase: { not: null },
+              },
+            },
+          })
+        ).map((item) => item.user.token_firebase ?? "");
+
+        const user = await trx.users.findUniqueOrThrow({
+          where: { id: +user_id },
+        });
+
+        const sendNotification = await sendMultipleNotification(tokens, {
+          title: `👋 ${user.name} telah keluar dari kelompok`,
+          body: `Kamu sudah tidak dapat melihatnya di menu kelompok`,
+        });
+
+        return { delGroupMember, delGuidance };
       });
 
       return (ctx.body = {
@@ -179,7 +243,6 @@ export class MahasiswaGroupController {
         message: "Berhasil keluar group",
       });
     } catch (error: any) {
-
       ctx.status = 500;
       const message = error?.message || "Unknown Error Message";
       return (ctx.body = {

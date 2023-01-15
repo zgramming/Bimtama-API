@@ -1,11 +1,13 @@
-import Validator from "fastest-validator";
-import { Next } from "koa";
+import dayjs from 'dayjs';
+import Validator from 'fastest-validator';
+import { Next } from 'koa';
 
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from '@prisma/client';
 
-import { KoaContext } from "../../utils/types";
-import { HTTP_RESPONSE_CODE } from "../../utils/http_response_code";
-import { ERROR_TYPE_VALIDATION } from "../../utils/constant";
+import { ERROR_TYPE_VALIDATION } from '../../utils/constant';
+import { sendMultipleNotification } from '../../utils/firebase_messaging';
+import { HTTP_RESPONSE_CODE } from '../../utils/http_response_code';
+import { KoaContext } from '../../utils/types';
 
 const prisma = new PrismaClient();
 const validator = new Validator();
@@ -69,6 +71,7 @@ export class DosenMeetingScheduleController {
       link_maps,
       link_meeting,
     } = ctx.request.body;
+    console.log({ title });
 
     const createSchema = validator.compile({
       user_id: { type: "number" },
@@ -81,6 +84,7 @@ export class DosenMeetingScheduleController {
       start_date: { type: "date" },
       ...(end_date && { end_date: { type: "date" } }),
     });
+
     const validate = await createSchema({
       user_id: +user_id,
       title,
@@ -114,25 +118,51 @@ export class DosenMeetingScheduleController {
       });
     }
 
-    const create = await prisma.meetingSchedule.create({
-      data: {
-        group_id: activeGroup.group_id,
-        title,
-        description,
-        start_date: new Date(start_date),
-        end_date: end_date ? new Date(end_date) : null,
-        type,
-        link_maps: link_maps ?? null,
-        link_meeting: link_meeting ?? null,
-        method,
-        created_by: +user_id,
-      },
+    const transaction = await prisma.$transaction(async (trx) => {
+      const create = await trx.meetingSchedule.create({
+        data: {
+          group_id: activeGroup.group_id,
+          title,
+          description,
+          start_date: new Date(start_date),
+          end_date: end_date ? new Date(end_date) : null,
+          type,
+          link_maps: link_maps ?? null,
+          link_meeting: link_meeting ?? null,
+          method,
+          created_by: +user_id,
+        },
+      });
+
+      /// Send notification to all student in group
+      const studentTokens = (
+        await trx.groupMember.findMany({
+          select: {
+            user: { select: { token_firebase: true } },
+          },
+          where: {
+            group_id: create.group_id,
+            user_id: { not: +user_id },
+            user: { token_firebase: { not: null } },
+          },
+        })
+      ).map((item) => item.user.token_firebase ?? "");
+
+      if (studentTokens.length > 0) {
+        const createdAt = dayjs(create.created_at).format("DD MMMM YYYY HH:mm");
+        const sendNotification = await sendMultipleNotification(studentTokens, {
+          title: `${create.title}`,
+          body: `${create.description} | ${createdAt} `,
+        });
+      }
+
+      return create;
     });
 
     return (ctx.body = {
       success: true,
       message: "Berhasil membuat pertemuan",
-      data: create,
+      data: transaction,
     });
   }
 

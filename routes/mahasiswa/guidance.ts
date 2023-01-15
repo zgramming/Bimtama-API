@@ -5,6 +5,7 @@ import { Next } from "koa";
 import { PrismaClient } from "@prisma/client";
 
 import { basePublicFileDir, ERROR_TYPE_VALIDATION } from "../../utils/constant";
+import { sendMultipleNotification } from "../../utils/firebase_messaging";
 import {
   moveFile,
   nextOutlineStudent,
@@ -206,8 +207,8 @@ export class MahasiswaGuidanceController {
           outlineComponentFirst.mst_outline_component_id,
       };
 
-      const transaction = await prisma.$transaction(async () => {
-        const upsert = await prisma.guidance.upsert({
+      const transaction = await prisma.$transaction(async (trx) => {
+        const upsert = await trx.guidance.upsert({
           where: {
             user_id: +user_id,
           },
@@ -224,7 +225,7 @@ export class MahasiswaGuidanceController {
           };
 
           const updateStudentGuidanceProgress =
-            await prisma.studentGuidanceProgress.upsert({
+            await trx.studentGuidanceProgress.upsert({
               where: {
                 user_id_mst_outline_component_id: {
                   mst_outline_component_id:
@@ -235,6 +236,33 @@ export class MahasiswaGuidanceController {
               create: dataUpsert,
               update: dataUpsert,
             });
+
+          /// Start send notification
+          const lectureUserID = (
+            await trx.groupMember.findMany({
+              where: { group_id: upsert.group_id, is_admin: true },
+            })
+          ).map((item) => item.user_id);
+
+          const tokens = (
+            await trx.users.findMany({
+              where: {
+                id: { in: lectureUserID },
+                token_firebase: { not: null },
+              },
+            })
+          ).map((item) => item.token_firebase ?? "");
+
+          const user = await trx.users.findUnique({
+            select: { name: true },
+            where: { id: +user_id },
+          });
+
+          const sendNotification = await sendMultipleNotification(tokens, {
+            title: `🚩 Mahasiswa memulai bimbingan`,
+            body: `${user?.name} sedang dalam proses bimbingan`,
+          });
+          console.log({ tokens, user, sendNotification });
         }
 
         return upsert;
@@ -373,19 +401,46 @@ export class MahasiswaGuidanceController {
         moveFileConfig.newPath = `${basePublicFileDir}/${name}`;
       }
 
-      const create = await prisma.guidanceDetail.create({
-        data: { ...data, file: data.file ? data.file : null },
-      });
+      const transaction = await prisma.$transaction(async (trx) => {
+        const create = await prisma.guidanceDetail.create({
+          include: {
+            mst_outline_component: {
+              select: { id: true, code: true, name: true },
+            },
+            user: { select: { id: true, name: true } },
+          },
+          data: { ...data, file: data.file ? data.file : null },
+        });
 
-      if (moveFileConfig.newPath) {
-        moveFile(moveFileConfig.oldPath, moveFileConfig.newPath);
-      }
+        /// send notification
+        const tokens = (
+          await trx.groupMember.findMany({
+            select: { user: { select: { token_firebase: true } } },
+            where: {
+              group_id: create.group_id,
+              user_id: { not: +user_id },
+              is_admin: true,
+              user: { token_firebase: { not: null } },
+            },
+          })
+        ).map((item) => item.user.token_firebase ?? "");
+
+        const sendNotification = await sendMultipleNotification(tokens, {
+          title: `🚩 Bimbingan ${create.user.name}`,
+          body: `${create.user.name} telah mengajukan ${create.mst_outline_component.name} - ${create.title}. Mohon untuk segera memeriksa pengajuan tersebut. `,
+        });
+
+        if (moveFileConfig.newPath) {
+          moveFile(moveFileConfig.oldPath, moveFileConfig.newPath);
+        }
+
+        return { create };
+      });
 
       return (ctx.body = {
         success: true,
-        data: create,
-        message:
-          "Berhasil menyimpan Proposal Judul, mohon tunggu dosen pembimbing untuk memeriksa pengajuan kamu.",
+        data: transaction.create,
+        message: `Berhasil melakukan pengajuan ${transaction.create.mst_outline_component.name}, mohon tunggu dosen pembimbing untuk memeriksa pengajuan kamu.`,
       });
     } catch (error: any) {
       ctx.status = HTTP_RESPONSE_CODE.INTERNAL_SERVER_ERROR;

@@ -12,6 +12,7 @@ import {
 } from "../../utils/function";
 import { HTTP_RESPONSE_CODE } from "../../utils/http_response_code";
 import { KoaContext } from "../../utils/types";
+import { sendSingleNotification } from "../../utils/firebase_messaging";
 
 const prisma = new PrismaClient();
 const validator = new Validator();
@@ -44,7 +45,7 @@ export class DosenGuidanceController {
       return (ctx.body = {
         success: false,
         message: "Kamu tidak mempunyai group yang aktif",
-        data : null,
+        data: null,
       });
     }
 
@@ -89,8 +90,7 @@ export class DosenGuidanceController {
       where: { user_id: +user_id },
     });
 
-    console.log({activeGroup});
-    
+    console.log({ activeGroup });
 
     if (!activeGroup) {
       ctx.status = HTTP_RESPONSE_CODE.FORBIDDEN;
@@ -206,6 +206,12 @@ export class DosenGuidanceController {
 
       const transaction = await prisma.$transaction(async (trx) => {
         const update = await trx.guidanceDetail.update({
+          include: {
+            mst_outline_component: {
+              select: { id: true, code: true, name: true },
+            },
+            user: { select: { id: true, name: true, token_firebase: true } },
+          },
           where: { id: row.id },
           data: data,
         });
@@ -220,7 +226,7 @@ export class DosenGuidanceController {
               user_id: update.user_id,
             };
 
-            const upsert = await prisma.studentGuidanceProgress.upsert({
+            const upsert = await trx.studentGuidanceProgress.upsert({
               where: {
                 user_id_mst_outline_component_id: {
                   mst_outline_component_id:
@@ -231,7 +237,27 @@ export class DosenGuidanceController {
               create: dataUpsert,
               update: dataUpsert,
             });
+
+            const sendNotification = await sendSingleNotification(
+              update.user.token_firebase ?? "",
+              {
+                title: "✅ Bimbingan Disetujui",
+                body: `Bimbingan kamu untuk komponen ${update.mst_outline_component.name} telah disetujui oleh dosen bimbingan`,
+              }
+            );
           }
+        }
+
+        if (update.status == "rejected") {
+          /// Send notification to student
+
+          const sendNotification = await sendSingleNotification(
+            update.user.token_firebase ?? "",
+            {
+              title: "🟥 Bimbingan Ditolak",
+              body: `Bimbingan kamu untuk komponen ${update.mst_outline_component.name} telah ditolak oleh dosen bimbingan`,
+            }
+          );
         }
 
         if (moveFileConfig.newPath) {
