@@ -1,6 +1,7 @@
 <p align="center">
     <image src="./assets/banner.png" height="600" />
 </p>
+
 # Bimtama API
 
 Rest API for accomodir [Admin](https://bimtama-admin.vercel.app/) and [Mobile Apps](https://play.google.com/store/apps/details?id=zeffry.reynando.bimtama.bimtama)
@@ -10,8 +11,6 @@ Rest API for accomodir [Admin](https://bimtama-admin.vercel.app/) and [Mobile Ap
 **Server:** Node, KoaJS
 
 ## Installation
-
-
 
 1. Follow this instruction for setup Firebase Cloud Message https://firebase.google.com/docs/admin/setup
 2. `npm install`
