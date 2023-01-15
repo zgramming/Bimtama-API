@@ -3,11 +3,13 @@ import {
   Notification,
 } from "firebase-admin/lib/messaging/messaging-api";
 import admin from "firebase-admin";
+
 type SingleNotificationParam = {
   title: string;
   body: string;
-  data: any;
+  data?: any;
 };
+
 export const sendSingleNotification = async (
   token: string,
   config: SingleNotificationParam
@@ -18,9 +20,11 @@ export const sendSingleNotification = async (
       title,
       body,
     },
-    data: data,
+    ...(data && { data }),
   };
-  const messaging = await admin.messaging().sendToDevice(token, payload);
+  const messaging = await admin
+    .messaging()
+    .sendToDevice(token, payload, { priority: "high" });
 
   return messaging;
 };
@@ -31,6 +35,9 @@ export const sendMultipleNotification = async (
   data?: any
 ) => {
   const messaging = await admin.messaging().sendMulticast({
+    android: {
+      priority: "high",
+    },
     tokens,
     data,
     notification: notification,

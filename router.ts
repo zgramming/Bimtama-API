@@ -34,7 +34,7 @@ const router = new Router<DefaultState, Context>();
 
 router.post("/notification/send", async (ctx, next) => {
   try {
-    const token = "e_gLxcnNQDmACuAD26PKNs:APA91bE-bIhwy_rJU-1JD_Ctno1CVTQVKDaU3j9OODTIU_TC7k4vYiGBy1S2n-DwCS1SCsEiy807sRNKmu8o-yiq-EAi-9qJI2ZoC8Yv4fQK11y5AmJuodn9GQWnYuuZd927D3BHiqSI";
+    const { token } = ctx.request.body;
     const messaging = await sendSingleNotification(token, {
       title: "Ini adalah title",
       body: "Ini adalah body",
@@ -57,6 +57,7 @@ router.post("/notification/send", async (ctx, next) => {
 
     return (ctx.body = {
       success: true,
+      data : messaging.results,
     });
   } catch (error: any) {
     console.log({ error });
@@ -253,17 +254,24 @@ router.get(
   validateJWTToken,
   DosenMeetingScheduleController.getByUserIdAndType
 );
-router.post(`/dosen/meeting-schedule`, DosenMeetingScheduleController.create);
+router.post(
+  `/dosen/meeting-schedule`,
+  validateJWTToken,
+  DosenMeetingScheduleController.create
+);
 router.post(
   `/dosen/meeting-schedule/personal`,
+  validateJWTToken,
   DosenMeetingScheduleController.createPersonal
 );
 router.put(
   `/dosen/meeting-schedule/:id`,
+  validateJWTToken,
   DosenMeetingScheduleController.update
 );
 router.put(
   `/dosen/meeting-schedule/personal/:id`,
+  validateJWTToken,
   DosenMeetingScheduleController.updatePersonal
 );
 
@@ -276,14 +284,18 @@ router.put(`/dosen/profile`, validateJWTToken, DosenProfileController.update);
 
 router.get(
   `/dosen/guidance/detail/submission/:id`,
+  validateJWTToken,
   DosenGuidanceController.getById
 );
 router.get(
   `/dosen/guidance/master-outline-component/:user_id`,
+  validateJWTToken,
+
   DosenGuidanceController.getMasterOutline
 );
 router.get(
   `/dosen/guidance/detail/:user_id/code-master-outline-component/:code`,
+  validateJWTToken,
   DosenGuidanceController.getGuidanceByCodeMasterOutline
 );
 router.put(

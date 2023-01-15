@@ -71,6 +71,7 @@ export class DosenMeetingScheduleController {
       link_maps,
       link_meeting,
     } = ctx.request.body;
+    console.log({ title });
 
     const createSchema = validator.compile({
       user_id: { type: "number" },
@@ -83,6 +84,7 @@ export class DosenMeetingScheduleController {
       start_date: { type: "date" },
       ...(end_date && { end_date: { type: "date" } }),
     });
+
     const validate = await createSchema({
       user_id: +user_id,
       title,
@@ -138,14 +140,16 @@ export class DosenMeetingScheduleController {
           select: {
             user: { select: { token_firebase: true } },
           },
-          where: { group_id: create.group_id },
+          where: {
+            group_id: create.group_id,
+            user_id: { not: +user_id },
+            user: { token_firebase: { not: null } },
+          },
         })
-      )
-        .map((item) => item.user.token_firebase ?? "")
-        .filter((item) => item !== "");
+      ).map((item) => item.user.token_firebase ?? "");
 
       if (studentTokens.length > 0) {
-        const createdAt = dayjs(create.created_at).format("DD MMMM YYYY HH mm");
+        const createdAt = dayjs(create.created_at).format("DD MMMM YYYY HH:mm");
         const sendNotification = await sendMultipleNotification(studentTokens, {
           title: `${create.title}`,
           body: `${create.description} | ${createdAt} `,
