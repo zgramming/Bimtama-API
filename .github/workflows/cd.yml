@@ -28,17 +28,8 @@ jobs:
           port: ${{ secrets.PORT }}
           script: |
             echo "CD to folder project"
-            cd /var/www/bimtama-api
+            cd ~/www/api-bimtama/
             echo "Reset Git to the latest commit"
             git reset --hard origin/main
             echo "Pull Rebase"
             git pull origin main --rebase
-            echo "NPM I if available new package"
-            export NVM_DIR=~/.nvm
-            source ~/.nvm/nvm.sh
-            echo "First we kill instance PM2 for saving memory"
-            pm2 del bimtama-api
-            npm --help
-            npm i
-            echo "Re-build Application"  
-            pm2 start npm --name bimtama-api -- start
